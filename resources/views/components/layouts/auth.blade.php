@@ -11,10 +11,11 @@
 <body class="min-h-screen font-sans antialiased bg-base-100">
 
   
-    {{-- The `$slot` goes here --}}
-    <x-slot:content>
-        {{ $slot }}
-    </x-slot:content>
+    <x-main>
+        <x-slot:content>
+            {{ $slot }}
+        </x-slot:content>
+    </x-main>
   
 
     {{--  TOAST area --}}
