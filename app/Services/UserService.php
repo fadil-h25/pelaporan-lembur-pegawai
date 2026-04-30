@@ -28,6 +28,17 @@ class UserService
         return User::count();
     }
 
+    public function getAvailableRoles(): array
+    {
+        $roles = collect(\App\UserRole::cases())->map(function ($role) {
+            return ['id' => $role->value, 'name' => ucfirst($role->value)];
+        })->toArray();
+
+        array_unshift($roles, ['id' => '', 'name' => 'Semua Role']);
+
+        return $roles;
+    }
+
     public function tableHeaders(): array
     {
         return [

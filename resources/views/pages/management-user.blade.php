@@ -48,13 +48,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function roles(): array
     {
-        $roles = collect(\App\UserRole::cases())->map(function ($role) {
-            return ['id' => $role->value, 'name' => ucfirst($role->value)];
-        })->toArray();
-
-        array_unshift($roles, ['id' => '', 'name' => 'Semua Role']);
-
-        return $roles;
+        return $this->service()->getAvailableRoles();
     }
 
     public function totalUsers()
@@ -80,10 +74,10 @@ new #[Layout('components.layouts.app')] class extends Component {
     {{-- STATS SECTION --}}
     <div class="flex flex-wrap gap-4 w-full mb-6">
         <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Total Laporan" :value="$this->users()->total()" desc="Data ditemukan" icon="o-document-text" />
+            <x-custom-stat title="Pengguna Ditemukan" :value="$this->users()->total()" desc="Hasil pencarian & filter" icon="o-users" />
         </div>
         <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Total Pengguna" :value="$this->totalUsers()" desc="User terdaftar" icon="o-user" />
+            <x-custom-stat title="Total Pengguna" :value="$this->totalUsers()" desc="Semua pengguna terdaftar" icon="o-users" />
         </div>
     </div>
 
