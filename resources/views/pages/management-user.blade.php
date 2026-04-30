@@ -82,7 +82,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     {{-- TABLE SECTION --}}
     <x-card>
-        <x-custom-table-header title="Data Daftar Pengguna" subtitle="Total pengguna terdaftar: {{ $this->totalUsers() }}">
+        <x-custom-table-header title="Data Daftar Pengguna" subtitle="Total pengguna ditemukan: {{ $this->users()->total() }}">
             <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
             <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
                 icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
