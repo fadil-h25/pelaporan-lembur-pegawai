@@ -98,7 +98,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <x-button label="LPJ" wire:click="cetak('lpj', {{ $lembur->id }})" class="btn-sm btn-info text-white" spinner />
 
                     {{-- Hanya tampilkan Edit dan Delete jika Admin --}}
-                    @if(Auth::user()->role === \App\UserRole::ADMIN->value || Auth::user()->role === 'admin')
+                    @if(Auth::user()->role === \App\UserRole::ADMIN)
                         {{-- Edit --}}
                         <x-button icon="o-pencil" link="/lembur/{{ $lembur->id }}/edit" class="btn-sm btn-ghost text-blue-500" />
                         

@@ -39,7 +39,7 @@
                         <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" />
                         <x-menu-item title="Dokumen Lembur" icon="o-document-text" link="/lembur" />
                         
-                        @if(auth()->user() && (auth()->user()->role === \App\UserRole::ADMIN->value || auth()->user()->role === 'admin'))
+                        @if(auth()->user() && auth()->user()->role === \App\UserRole::ADMIN)
                             <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
                         @endif
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
