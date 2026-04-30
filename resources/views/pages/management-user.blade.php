@@ -67,7 +67,20 @@ new #[Layout('components.layouts.app')] class extends Component {
     {{-- HEADER Pages --}}
     <x-header title="Manajemen User" subtitle="Selamat datang kembali di sistem pelaporan lembur">
         <x-slot:actions>
+        <x-dropdown right>
+            <x-slot:trigger>
+              <x-avatar 
+                :placeholder="collect(explode(' ', auth()->user()->name))->map(fn($n) => $n[0])->take(2)->implode('')" 
+                :title="auth()->user()->name" 
+                :subtitle="auth()->user()->email" 
+                class="!w-10" 
+                />
 
+            </x-slot:trigger>
+            
+            <x-menu-item title="Profile" icon="o-user" link="#" />
+            <x-menu-item title="Logout" icon="o-power" link="/logout" no-wire-navigate />
+        </x-dropdown>
         </x-slot:actions>
     </x-header>
 
