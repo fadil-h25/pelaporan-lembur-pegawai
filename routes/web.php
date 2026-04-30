@@ -9,3 +9,4 @@ Volt::route('/management-user', 'management-user')->name('management-user');
 Volt::route('/lembur', 'lembur.index')->name('lembur.index');
 Volt::route('/lembur/create', 'lembur.create')->name('lembur.create');
 Volt::route('/lembur/{lembur}/edit', 'lembur.edit')->name('lembur.edit');
+Volt::route('/lembur/{lembur}/print', 'lembur.print')->name('lembur.print');
