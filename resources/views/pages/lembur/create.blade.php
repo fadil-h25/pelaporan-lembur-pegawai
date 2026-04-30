@@ -43,11 +43,10 @@ new #[Layout('components.layouts.app')] class extends Component {
 ?>
 
 <div>
-    <x-header title="Buat Dokumen Lembur" subtitle="Isi form di bawah untuk mengajukan lembur" separator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="/lembur" icon="o-arrow-left" class="btn-ghost" />
-        </x-slot:actions>
-    </x-header>
+    <x-custom-header 
+        title="Buat Dokumen Lembur" 
+        subtitle="Isi form di bawah untuk mengajukan lembur" 
+    />
 
     <x-card>
         <x-form wire:submit="save">

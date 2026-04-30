@@ -62,13 +62,10 @@ new #[Layout('components.layouts.app')] class extends Component {
 ?>
 
 <div>
-    <x-header title="Dokumen Lembur" subtitle="Daftar pengajuan dokumen lembur pegawai" separator progress-indicator>
-        <x-slot:actions>
-            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
-            {{-- Mengarahkan ke halaman create --}}
-            <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
-        </x-slot:actions>
-    </x-header>
+    <x-custom-header 
+        title="Dokumen Lembur" 
+        subtitle="Daftar pengajuan dokumen lembur pegawai" 
+    />
 
     <div class="flex flex-wrap gap-4 w-full mb-6">
         <div class="flex-1 min-w-[200px]">
