@@ -45,6 +45,8 @@
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
 <x-menu-separator />
 
+<x-menu-item title="Profile" icon="o-user" link="/profile" />
+
 <x-menu-item 
     title="Logout" 
     icon="o-power" 

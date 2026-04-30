@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
         Volt::route('/{lembur}/edit', 'lembur.edit')->name('edit');
     });
 
+    // Profile
+    Volt::route('/profile', 'profile')->name('profile');
+
     // Logout
     Route::get('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 });
