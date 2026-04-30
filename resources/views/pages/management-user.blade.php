@@ -4,12 +4,15 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
-use App\Models\User;
+use App\Services\UserService;
 
 new #[Layout('components.layouts.app')] class extends Component {
     // State untuk pencarian, otomatis sinkron ke URL browser
     #[Url]
     public string $search = '';
+
+    #[Url]
+    public string $role = '';
 
     // Property untuk pagination
     public int $perPage = 5;
@@ -22,30 +25,46 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->resetPage();
     }
 
+    public function updatedRole()
+    {
+        $this->resetPage();
+    }
+
     // Reset pagination saat perPage berubah
     public function updatedPerPage()
     {
         $this->resetPage();
     }
 
-    // Logika pengambilan data (nantinya ganti dengan Query ke DB)
+    protected function service(): UserService
+    {
+        return app(UserService::class);
+    }
+
     public function users()
     {
-        return User::where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->paginate($this->perPage);
+        return $this->service()->filter($this->search, $this->role, $this->perPage);
     }
 
-    // Hitung total user untuk stats
+    public function roles(): array
+    {
+        $roles = collect(\App\UserRole::cases())->map(function ($role) {
+            return ['id' => $role->value, 'name' => ucfirst($role->value)];
+        })->toArray();
+
+        array_unshift($roles, ['id' => '', 'name' => 'Semua Role']);
+
+        return $roles;
+    }
+
     public function totalUsers()
     {
-        return User::count();
+        return $this->service()->totalUsers();
     }
 
-    // Header tabel (bisa ditaruh di properti atau di dalam fungsi)
     public function headers(): array
     {
-        return [['key' => 'id', 'label' => '#'], ['key' => 'name', 'label' => 'Nama']];
+        return $this->service()->tableHeaders();
     }
 };
 ?>
@@ -73,12 +92,13 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-header title="Data Daftar Pengguna" subtitle="Total pengguna terdaftar: {{ $this->totalUsers() }}" separator
             progress-indicator>
             <x-slot:actions>
+                <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
                 <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
                     icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
                 <x-button icon="o-plus" class="btn-success text-white rounded-full" />
             </x-slot:actions>
         </x-header>
-        <x-table :per-page-values="[3, 5, 10]" :per-page="$perPage" with-pagination :headers="$this->headers()" :rows="$this->users()"
+        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()"
             @row-click="alert('Kamu mengklik ' + $event.detail.name)" />
     </x-card>
 
