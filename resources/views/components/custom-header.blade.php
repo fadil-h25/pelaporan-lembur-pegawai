@@ -1,6 +1,6 @@
 @props(['title' => '', 'subtitle' => ''])
 
-<x-header :title="$title" :subtitle="$subtitle">
+<x-header :title="$title" :subtitle="$subtitle" >
     <x-slot:actions>
         <x-dropdown right>
             <x-slot:trigger>
