@@ -82,17 +82,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     {{-- TABLE SECTION --}}
     <x-card>
-        <x-header title="Data Daftar Pengguna" subtitle="Total pengguna terdaftar: {{ $this->totalUsers() }}" separator
-            progress-indicator>
-            <x-slot:actions>
-                <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
-                <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
-                    icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
-                <x-button icon="o-plus" class="btn-success text-white rounded-full" />
-            </x-slot:actions>
-        </x-header>
-        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()"
-            @row-click="alert('Kamu mengklik ' + $event.detail.name)" />
+        <x-custom-table-header title="Data Daftar Pengguna" subtitle="Total pengguna terdaftar: {{ $this->totalUsers() }}">
+            <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
+            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
+                icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
+            <x-button icon="o-plus" class="btn-success text-white rounded-full" />
+        </x-custom-table-header>
+        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()" />
     </x-card>
 
 </div>

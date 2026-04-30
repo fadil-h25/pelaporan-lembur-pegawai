@@ -77,6 +77,10 @@ new #[Layout('components.layouts.app')] class extends Component {
     </div>
 
     <x-card>
+        <x-custom-table-header title="Data Dokumen Lembur" subtitle="Total dokumen lembur terdaftar: {{ $this->total() }}">
+            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
+            <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
+        </x-custom-table-header>
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">
             
             {{-- Custom Kolom Nomor --}}

@@ -1,7 +1,7 @@
 <x-layouts.app>
 
    <x-custom-header 
-        title="Manajemen User" 
+        title="Dashboard" 
         subtitle="Selamat datang kembali di sistem pelaporan lembur" 
     />
 
