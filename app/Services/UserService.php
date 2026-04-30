@@ -28,6 +28,11 @@ class UserService
         return User::count();
     }
 
+    public function countByRole(\App\UserRole $role): int
+    {
+        return User::where('role', $role->value)->count();
+    }
+
     public function getAvailableRoles(): array
     {
         $roles = collect(\App\UserRole::cases())->map(function ($role) {

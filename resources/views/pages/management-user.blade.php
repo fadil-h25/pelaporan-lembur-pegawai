@@ -56,6 +56,21 @@ new #[Layout('components.layouts.app')] class extends Component {
         return $this->service()->totalUsers();
     }
 
+    public function totalAdmin()
+    {
+        return $this->service()->countByRole(\App\UserRole::ADMIN);
+    }
+
+    public function totalOperator()
+    {
+        return $this->service()->countByRole(\App\UserRole::OPERATOR);
+    }
+
+    public function totalPegawai()
+    {
+        return $this->service()->countByRole(\App\UserRole::PEGAWAI);
+    }
+
     public function headers(): array
     {
         return $this->service()->tableHeaders();
@@ -73,10 +88,13 @@ new #[Layout('components.layouts.app')] class extends Component {
     {{-- STATS SECTION --}}
     <div class="flex flex-wrap gap-4 w-full mb-6">
         <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Pengguna Ditemukan" :value="$this->users()->total()" desc="Hasil pencarian & filter" icon="o-users" />
+            <x-custom-stat title="Admin" :value="$this->totalAdmin()" desc="Total akun admin" icon="o-shield-check" />
         </div>
         <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Total Pengguna" :value="$this->totalUsers()" desc="Semua pengguna terdaftar" icon="o-users" />
+            <x-custom-stat title="Operator" :value="$this->totalOperator()" desc="Total akun operator" icon="o-cog" />
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <x-custom-stat title="Pegawai" :value="$this->totalPegawai()" desc="Total akun pegawai" icon="o-users" />
         </div>
     </div>
 
