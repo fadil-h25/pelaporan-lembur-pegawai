@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Lembur;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Carbon\Carbon;
 
 class LemburService
 {
@@ -55,13 +57,58 @@ class LemburService
     }
 
     /**
-     * Cetak Data Lembur (Print)
-     * Mengembalikan URL cetak (bisa disesuaikan dengan routing)
+     * Hitung nomor surat berdasarkan urutan data di database
      */
-    public function getPrintUrl(Lembur $lembur): string
+    public function getNomorDatabase(Lembur $lembur): int
     {
-        // Sementara mengembalikan URL placeholder, sesuaikan dengan rute Anda
-        return "/lembur/{$lembur->id}/print";
+        return Lembur::orderBy('created_at', 'asc')->pluck('id')->search($lembur->id) + 1;
+    }
+
+    /**
+     * Fitur Terbilang
+     */
+    public function terbilang($n): string
+    {
+        $b = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+        if ($n < 12) {
+            return ' ' . $b[$n];
+        } elseif ($n < 20) {
+            return $this->terbilang($n - 10) . ' belas';
+        } elseif ($n < 100) {
+            return $this->terbilang($n / 10) . ' puluh' . $this->terbilang($n % 10);
+        }
+
+        return '';
+    }
+
+    /**
+     * Proses Download Dokumen Cetak (.docx)
+     */
+    public function downloadCetak($type, Lembur $lembur, $nomor)
+    {
+        $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
+        Carbon::setLocale('id');
+        $t = Carbon::parse($lembur->tanggal_lembur);
+        
+        $tp->setValue('no_surat', str_pad($nomor, 4, '0', STR_PAD_LEFT) . '/SPKL/SN/' . $t->format('m/Y'));
+        $tp->setValue('nama', $lembur->nama);
+        $tp->setValue('nip', $lembur->nip);
+        $tp->setValue('jabatan', $lembur->jabatan);
+        $tp->setValue('golongan', $lembur->golongan);
+        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y')); 
+        $tp->setValue('tanggal', $t->translatedFormat('d F Y'));
+        $tp->setValue('jam', $lembur->jumlah_jam);
+        $tp->setValue('terbilang', trim($this->terbilang($lembur->jumlah_jam)));
+        $tp->setValue('pekerjaan', $lembur->rencana_kerja);
+        $tp->setValue('hasil', $lembur->hasil_kerja);
+        $tp->setValue('anggaran', $lembur->pembebanan_anggaran);
+        $tp->setValue('nama_kasek', 'AWALUDDIN MUSTAFA, S.E., M.Si');
+        $tp->setValue('nip_kasek', '19740712 200212 1 006');
+        
+        $path = storage_path('app/public/' . $type . '_' . $lembur->id . '_' . time() . '.docx');
+        $tp->saveAs($path);
+
+        return response()->download($path)->deleteFileAfterSend(true);
     }
 
     /**
@@ -70,12 +117,10 @@ class LemburService
     public function tableHeaders(): array
     {
         return [
-            ['key' => 'id', 'label' => '#'],
+            ['key' => 'nomor', 'label' => 'No. Surat', 'sortable' => false],
             ['key' => 'nama', 'label' => 'Nama'],
-            ['key' => 'nip', 'label' => 'NIP'],
-            ['key' => 'tanggal_lembur', 'label' => 'Tgl Lembur'],
+            ['key' => 'hasil_kerja', 'label' => 'Hasil Kerja'],
             ['key' => 'jumlah_jam', 'label' => 'Jam'],
-            ['key' => 'rencana_kerja', 'label' => 'Rencana Kerja'],
             ['key' => 'status', 'label' => 'Status'],
         ];
     }
