@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\UserRole;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -20,12 +21,12 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'name' => 'Administrator Lembur',
-            'email' => 'admin@gmail.com',
+            'email' => 'admin1@gmail.com',
             'password' => Hash::make('password123'), // Ganti dengan password yang aman
             'nip' => '',
             'golongan' => 'IV/a',
             'jabatan' => '',
-            'role' => 'admin',
+            'role' => UserRole::ADMIN->value,
         ]);
     }
 }

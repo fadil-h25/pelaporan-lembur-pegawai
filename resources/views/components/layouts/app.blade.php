@@ -36,13 +36,12 @@
                 <x-menu activate-by-route>
 
                     <div class="mt-2">
-                        <x-menu-item title="Hello" icon="o-sparkles" link="/" />
-                        <x-menu-item title="Hello" icon="o-sparkles" link="/" />
-
-                        <x-menu-sub title="Settings" icon="o-cog-6-tooth">
-                            <x-menu-item title="Wifi" icon="o-wifi" link="####" />
-                            <x-menu-item title="Archives" icon="o-archive-box" link="####" />
-                        </x-menu-sub>
+                        <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" />
+                        <x-menu-item title="Dokumen Lembur" icon="o-document-text" link="/lembur" />
+                        
+                        @if(auth()->user() && (auth()->user()->role === \App\UserRole::ADMIN->value || auth()->user()->role === 'admin'))
+                            <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
+                        @endif
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
 <x-menu-separator />
 
