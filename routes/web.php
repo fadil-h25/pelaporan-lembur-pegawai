@@ -3,9 +3,27 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Volt::route('/', 'auth.login')->name('login');
-Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
-Volt::route('/management-user', 'management-user')->name('management-user');
-Volt::route('/lembur', 'lembur.index')->name('lembur.index');
-Volt::route('/lembur/create', 'lembur.create')->name('lembur.create');
-Volt::route('/lembur/{lembur}/edit', 'lembur.edit')->name('lembur.edit');
+// Guest Routes
+Route::middleware('guest')->group(function () {
+    Route::redirect('/', '/login');
+    Volt::route('/login', 'auth.login')->name('login');
+});
+
+// Authenticated Routes
+Route::middleware('auth')->group(function () {
+    // Dashboard
+    Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
+    
+    // Management User
+    Volt::route('/management-user', 'management-user')->name('management-user');
+    
+    // Manajemen Dokumen Lembur
+    Route::prefix('lembur')->name('lembur.')->group(function () {
+        Volt::route('/', 'lembur.index')->name('index');
+        Volt::route('/create', 'lembur.create')->name('create');
+        Volt::route('/{lembur}/edit', 'lembur.edit')->name('edit');
+    });
+
+    // Logout
+    Route::get('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
+});

@@ -43,6 +43,17 @@
                             <x-menu-item title="Wifi" icon="o-wifi" link="####" />
                             <x-menu-item title="Archives" icon="o-archive-box" link="####" />
                         </x-menu-sub>
+                        {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
+<x-menu-separator />
+
+<x-menu-item 
+    title="Logout" 
+    icon="o-power" 
+    class="text-error-content bg-error/10 hover:bg-error/20" 
+   
+    no-wire-navigate 
+    link="/logout"
+/>
                     </div>
                 </x-menu>
             </x-slot:sidebar>
