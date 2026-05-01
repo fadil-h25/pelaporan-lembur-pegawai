@@ -127,8 +127,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             @scope('cell_nomor', $lembur)
                 @php
                     $nomorDatabase = app(\App\Services\LemburService::class)->getNomorDatabase($lembur);
+                    $t = \Carbon\Carbon::parse($lembur->tanggal_lembur);
+                    $fullNomor = str_pad($nomorDatabase, 4, '0', STR_PAD_LEFT) . '/SPKL/SN/' . $t->format('m/Y');
                 @endphp
-                <span class="text-error font-bold">{{ str_pad($nomorDatabase, 4, '0', STR_PAD_LEFT) }}</span>
+                <span class="text-error font-bold">{{ $fullNomor }}</span>
             @endscope
 
             {{-- Kolom Aksi --}}

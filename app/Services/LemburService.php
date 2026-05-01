@@ -166,7 +166,6 @@ class LemburService
             ['key' => 'nama', 'label' => 'Nama'],
             ['key' => 'hasil_kerja', 'label' => 'Hasil Kerja'],
             ['key' => 'jumlah_jam', 'label' => 'Jam'],
-            ['key' => 'status', 'label' => 'Status'],
         ];
     }
 }
