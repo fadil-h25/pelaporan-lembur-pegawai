@@ -3,10 +3,13 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
+use Livewire\WithFileUploads;
 use App\Services\LemburService;
 use App\Models\Lembur;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use WithFileUploads;
+
     public Lembur $lembur;
 
     #[Validate('required|date')]
@@ -21,6 +24,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('required|string')]
     public $rencana_kerja;
 
+    #[Validate('nullable|image|max:2048')]
+    public $dokumentasi;
+
     public function mount(Lembur $lembur)
     {
         $this->lembur = $lembur;
@@ -33,6 +39,11 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function save()
     {
         $validated = $this->validate();
+
+        if ($this->dokumentasi) {
+            $path = $this->dokumentasi->store('dokumentasi', 'local');
+            $validated['dokumentasi'] = basename($path);
+        }
 
         app(LemburService::class)->update($this->lembur, $validated);
 
@@ -58,6 +69,18 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
             
             <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required />
+
+            <div class="mt-4">
+                @if($lembur->dokumentasi)
+                    <div class="mb-2">
+                        <span class="text-sm text-gray-500">Dokumentasi Saat Ini:</span>
+                        <div class="mt-1">
+                            <img src="{{ route('private.dokumentasi', ['filename' => $lembur->dokumentasi]) }}" alt="Dokumentasi" class="h-32 object-cover rounded shadow">
+                        </div>
+                    </div>
+                @endif
+                <x-file label="Upload Dokumentasi Baru (Opsional)" wire:model="dokumentasi" accept="image/*" hint="Maksimal 2MB. Kosongkan jika tidak ingin mengubah." />
+            </div>
 
             <x-slot:actions>
                 <x-button label="Batal" link="/lembur" class="btn-ghost" />

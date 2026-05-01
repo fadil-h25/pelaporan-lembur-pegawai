@@ -3,10 +3,13 @@
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
+use Livewire\WithFileUploads;
 use App\Services\LemburService;
 use Illuminate\Support\Facades\Auth;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use WithFileUploads;
+
     #[Validate('required|date')]
     public $tanggal_lembur;
 
@@ -19,11 +22,19 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('required|string')]
     public $rencana_kerja;
 
+    #[Validate('nullable|image|max:2048')]
+    public $dokumentasi;
+
     public function save()
     {
         $validated = $this->validate();
         
         $user = Auth::user();
+
+        if ($this->dokumentasi) {
+            $path = $this->dokumentasi->store('dokumentasi', 'local');
+            $validated['dokumentasi'] = basename($path);
+        }
 
         // Add user info and default status
         $data = array_merge($validated, [
@@ -59,6 +70,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
             
             <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" placeholder="Contoh: Menindaklanjuti arahan atasan..." rows="4" required />
+
+            <div class="mt-4">
+                <x-file label="Dokumentasi (Opsional)" wire:model="dokumentasi" accept="image/*" hint="Maksimal 2MB" />
+            </div>
 
             <x-slot:actions>
                 <x-button label="Batal" link="/lembur" class="btn-ghost" />
