@@ -45,8 +45,16 @@ new #[Layout('components.layouts.app')] class extends Component {
         $validated = $this->validate();
 
         if ($this->dokumentasi) {
+            // Hapus gambar lama jika ada (opsional, tapi disarankan agar storage tidak penuh)
+            if ($this->lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $this->lembur->dokumentasi)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete('dokumentasi/' . $this->lembur->dokumentasi);
+            }
+            
             $path = $this->dokumentasi->store('dokumentasi', 'local');
             $validated['dokumentasi'] = basename($path);
+        } else {
+            // Jika user tidak mengupload gambar baru, jangan update kolom dokumentasi (jangan jadikan null)
+            unset($validated['dokumentasi']);
         }
 
         // Jika bukan admin, pastikan data yang readonly tidak diubah oleh request (keamanan)

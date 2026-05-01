@@ -105,9 +105,10 @@ class LemburService
         $tp->setValue('nama_kasek', 'AWALUDDIN MUSTAFA, S.E., M.Si');
         $tp->setValue('nip_kasek', '19740712 200212 1 006');
         
-        if ($lembur->dokumentasi && file_exists(storage_path('app/dokumentasi/' . $lembur->dokumentasi))) {
+        if ($lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $lembur->dokumentasi)) {
+            $pathImage = \Illuminate\Support\Facades\Storage::disk('local')->path('dokumentasi/' . $lembur->dokumentasi);
             $tp->setImageValue('gambar', [
-                'path' => storage_path('app/dokumentasi/' . $lembur->dokumentasi),
+                'path' => $pathImage,
                 'width' => 400,
                 'height' => 300,
                 'ratio' => true
