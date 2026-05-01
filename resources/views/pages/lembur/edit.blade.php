@@ -4,6 +4,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 use App\Services\LemburService;
 use App\Models\Lembur;
 
@@ -11,6 +12,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     use WithFileUploads;
 
     public Lembur $lembur;
+    public bool $isAdmin = false;
 
     #[Validate('required|date')]
     public $tanggal_lembur;
@@ -30,6 +32,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(Lembur $lembur)
     {
         $this->lembur = $lembur;
+        $this->isAdmin = Auth::user()->role === 'admin';
+        
         $this->tanggal_lembur = $lembur->tanggal_lembur;
         $this->jumlah_jam = $lembur->jumlah_jam;
         $this->pembebanan_anggaran = $lembur->pembebanan_anggaran;
@@ -43,6 +47,14 @@ new #[Layout('components.layouts.app')] class extends Component {
         if ($this->dokumentasi) {
             $path = $this->dokumentasi->store('dokumentasi', 'local');
             $validated['dokumentasi'] = basename($path);
+        }
+
+        // Jika bukan admin, pastikan data yang readonly tidak diubah oleh request (keamanan)
+        if (!$this->isAdmin) {
+            unset($validated['tanggal_lembur']);
+            unset($validated['jumlah_jam']);
+            unset($validated['pembebanan_anggaran']);
+            unset($validated['rencana_kerja']);
         }
 
         app(LemburService::class)->update($this->lembur, $validated);
@@ -63,12 +75,12 @@ new #[Layout('components.layouts.app')] class extends Component {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <x-input label="Nama" value="{{ $lembur->nama }}" readonly />
                 <x-input label="NIP" value="{{ $lembur->nip }}" readonly />
-                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required />
-                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required />
-                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required />
+                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required @if(!$isAdmin) readonly disabled @endif />
+                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required @if(!$isAdmin) readonly disabled @endif />
+                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required @if(!$isAdmin) readonly disabled @endif />
             </div>
             
-            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required />
+            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required @if(!$isAdmin) readonly disabled @endif />
 
             <div class="mt-4">
                 @if($lembur->dokumentasi)

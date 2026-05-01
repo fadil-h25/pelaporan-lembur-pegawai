@@ -98,11 +98,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <x-button label="SPK" wire:click="cetak('spk', {{ $lembur->id }})" class="btn-sm btn-success text-white" spinner />
                     <x-button label="LPJ" wire:click="cetak('lpj', {{ $lembur->id }})" class="btn-sm btn-info text-white" spinner />
 
-                    {{-- Hanya tampilkan Edit dan Delete jika Admin --}}
-                    @if(Auth::user()->role === \App\UserRole::ADMIN)
-                        {{-- Edit --}}
-                        <x-button icon="o-pencil" link="/lembur/{{ $lembur->id }}/edit" class="btn-sm btn-ghost text-blue-500" />
-                        
+                    {{-- Edit (Semua user bisa akses, walau non-admin cuma bisa edit dokumen) --}}
+                    <x-button icon="o-pencil" link="/lembur/{{ $lembur->id }}/edit" class="btn-sm btn-ghost text-blue-500" />
+
+                    {{-- Hanya tampilkan Delete jika Admin --}}
+                    @if(Auth::user()->role === \App\UserRole::ADMIN->value)
                         {{-- Hapus --}}
                         <x-button icon="o-trash" wire:click="delete({{ $lembur->id }})" wire:confirm="Apakah Anda yakin ingin menghapus dokumen ini?" class="btn-sm btn-ghost text-red-500" spinner />
                     @endif
