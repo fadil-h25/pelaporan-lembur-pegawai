@@ -31,18 +31,29 @@ class LemburService
             ->paginate($perPage);
     }
 
-    /**
-     * Total Keseluruhan Data Lembur
-     */
-    public function total(): int
+    public function totalJamTahunIni(): int
     {
         $user = \Illuminate\Support\Facades\Auth::user();
 
-        return Lembur::query()
+        return (int) Lembur::query()
             ->when($user->role !== \App\UserRole::ADMIN->value, function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
-            ->count();
+            ->whereYear('tanggal_lembur', Carbon::now()->year)
+            ->sum('jumlah_jam');
+    }
+
+    public function totalJamBulanIni(): int
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        return (int) Lembur::query()
+            ->when($user->role !== \App\UserRole::ADMIN->value, function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->whereYear('tanggal_lembur', Carbon::now()->year)
+            ->whereMonth('tanggal_lembur', Carbon::now()->month)
+            ->sum('jumlah_jam');
     }
 
     /**

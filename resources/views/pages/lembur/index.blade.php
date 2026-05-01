@@ -37,9 +37,14 @@ new #[Layout('components.layouts.app')] class extends Component {
         return $this->service()->filter($this->search, $this->perPage);
     }
 
-    public function total()
+    public function totalJamTahunIni()
     {
-        return $this->service()->total();
+        return $this->service()->totalJamTahunIni();
+    }
+
+    public function totalJamBulanIni()
+    {
+        return $this->service()->totalJamBulanIni();
     }
 
     public function headers(): array
@@ -72,7 +77,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-custom-stat title="Lembur Ditemukan" :value="$this->lemburs()->total()" desc="Hasil pencarian & filter" icon="o-document-magnifying-glass" />
         </div>
         <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Total Lembur" :value="$this->total()" desc="Semua dokumen terdaftar" icon="o-document-text" />
+            <x-custom-stat title="Jam Lembur (Bulan Ini)" :value="$this->totalJamBulanIni() . ' Jam'" desc="Total jam bulan berjalan" icon="o-clock" />
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <x-custom-stat title="Jam Lembur (Tahun Ini)" :value="$this->totalJamTahunIni() . ' Jam'" desc="Total jam tahun berjalan" icon="o-calendar" />
         </div>
     </div>
 
