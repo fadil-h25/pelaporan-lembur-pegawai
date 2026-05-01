@@ -19,6 +19,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Url]
     public string $endDate = '';
 
+    #[Url]
+    public string $sort = 'terbaru';
+
     public int $perPage = 5;
 
     use WithPagination;
@@ -39,6 +42,11 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->resetPage();
     }
 
+    public function updatedSort()
+    {
+        $this->resetPage();
+    }
+
     public function updatedPerPage()
     {
         $this->resetPage();
@@ -51,7 +59,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function lemburs()
     {
-        return $this->service()->filter($this->search, $this->perPage, $this->startDate, $this->endDate);
+        return $this->service()->filter($this->search, $this->perPage, $this->startDate, $this->endDate, $this->sort);
     }
 
     public function totalJamTahunIni()
@@ -114,6 +122,13 @@ new #[Layout('components.layouts.app')] class extends Component {
             {{-- <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable /> --}}
             
             <div class="flex gap-2 items-center">
+                <x-select wire:model.live="sort" :options="[
+                    ['id' => 'terbaru', 'name' => 'Tanggal Terbaru'],
+                    ['id' => 'terlama', 'name' => 'Tanggal Terlama'],
+                    ['id' => 'nomor_asc', 'name' => 'Nomor Kecil ke Besar'],
+                    ['id' => 'nomor_desc', 'name' => 'Nomor Besar ke Kecil'],
+                ]" class="!bg-white min-w-[200px]" />
+
                 <x-input type="date" wire:model.live="startDate" class="!bg-white" />
                 <span class="text-gray-500 font-bold">-</span>
                 <x-input type="date" wire:model.live="endDate" class="!bg-white" />

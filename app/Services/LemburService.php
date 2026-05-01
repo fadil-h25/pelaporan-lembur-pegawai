@@ -12,7 +12,7 @@ class LemburService
     /**
      * Filter dan Paginate Data Lembur
      */
-    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = ''): LengthAwarePaginator
+    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
     {
         $user = \Illuminate\Support\Facades\Auth::user();
 
@@ -36,7 +36,10 @@ class LemburService
                       ->orWhere('rencana_kerja', 'like', '%' . $search . '%');
                 });
             })
-            ->latest()
+            ->when($sort === 'terbaru', fn ($q) => $q->orderBy('tanggal_lembur', 'desc'))
+            ->when($sort === 'terlama', fn ($q) => $q->orderBy('tanggal_lembur', 'asc'))
+            ->when($sort === 'nomor_asc', fn ($q) => $q->orderBy('id', 'asc'))
+            ->when($sort === 'nomor_desc', fn ($q) => $q->orderBy('id', 'desc'))
             ->paginate($perPage);
     }
 
