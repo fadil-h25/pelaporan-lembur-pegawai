@@ -13,12 +13,28 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Url]
     public string $search = '';
 
+    #[Url]
+    public string $startDate = '';
+
+    #[Url]
+    public string $endDate = '';
+
     public int $perPage = 5;
 
     use WithPagination;
     use \Mary\Traits\Toast;
 
     public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStartDate()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedEndDate()
     {
         $this->resetPage();
     }
@@ -35,7 +51,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function lemburs()
     {
-        return $this->service()->filter($this->search, $this->perPage);
+        return $this->service()->filter($this->search, $this->perPage, $this->startDate, $this->endDate);
     }
 
     public function totalJamTahunIni()
@@ -95,7 +111,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <x-card>
         <x-custom-table-header title="Data Dokumen Lembur" subtitle="Total dokumen lembur ditemukan: {{ $this->lemburs()->total() }}">
-            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
+            {{-- <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable /> --}}
+            
+            <div class="flex gap-2 items-center">
+                <x-input type="date" wire:model.live="startDate" class="!bg-white" />
+                <span class="text-gray-500 font-bold">-</span>
+                <x-input type="date" wire:model.live="endDate" class="!bg-white" />
+            </div>
+
             <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
         </x-custom-table-header>
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">

@@ -12,13 +12,22 @@ class LemburService
     /**
      * Filter dan Paginate Data Lembur
      */
-    public function filter(string $search = '', int $perPage = 5): LengthAwarePaginator
+    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = ''): LengthAwarePaginator
     {
         $user = \Illuminate\Support\Facades\Auth::user();
 
         return Lembur::query()
             ->when($user->role !== \App\UserRole::ADMIN->value, function ($query) use ($user) {
                 $query->where('user_id', $user->id);
+            })
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal_lembur', [$startDate, $endDate]);
+            })
+            ->when($startDate && !$endDate, function ($query) use ($startDate) {
+                $query->whereDate('tanggal_lembur', '>=', $startDate);
+            })
+            ->when(!$startDate && $endDate, function ($query) use ($endDate) {
+                $query->whereDate('tanggal_lembur', '<=', $endDate);
             })
             ->when($search, function ($query) use ($search) {
                 $query->where(function($q) use ($search) {
