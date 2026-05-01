@@ -14,11 +14,18 @@ class LemburService
      */
     public function filter(string $search = '', int $perPage = 5): LengthAwarePaginator
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
         return Lembur::query()
+            ->when($user->role !== \App\UserRole::ADMIN->value, function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
             ->when($search, function ($query) use ($search) {
-                $query->where('nama', 'like', '%' . $search . '%')
-                    ->orWhere('nip', 'like', '%' . $search . '%')
-                    ->orWhere('rencana_kerja', 'like', '%' . $search . '%');
+                $query->where(function($q) use ($search) {
+                    $q->where('nama', 'like', '%' . $search . '%')
+                      ->orWhere('nip', 'like', '%' . $search . '%')
+                      ->orWhere('rencana_kerja', 'like', '%' . $search . '%');
+                });
             })
             ->latest()
             ->paginate($perPage);
@@ -29,7 +36,13 @@ class LemburService
      */
     public function total(): int
     {
-        return Lembur::count();
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        return Lembur::query()
+            ->when($user->role !== \App\UserRole::ADMIN->value, function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->count();
     }
 
     /**
