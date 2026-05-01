@@ -27,6 +27,15 @@ Route::middleware('auth')->group(function () {
     // Profile
     Volt::route('/profile', 'profile')->name('profile');
 
+    // Private Files Route
+    Route::get('/private/dokumentasi/{filename}', function ($filename) {
+        $path = 'dokumentasi/' . $filename;
+        if (!Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
+        return Illuminate\Support\Facades\Storage::disk('local')->response($path);
+    })->name('private.dokumentasi');
+
     // Logout
     Route::get('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 });
