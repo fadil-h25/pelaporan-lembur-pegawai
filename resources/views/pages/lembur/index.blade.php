@@ -144,7 +144,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <x-button icon="o-pencil" link="/lembur/{{ $lembur->id }}/edit" class="btn-sm btn-ghost text-blue-500" />
 
                     {{-- Hanya tampilkan Delete jika Admin atau Operator --}}
-                    @if(in_array(Auth::user()->role, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]))
+                    @if(in_array(Auth::user()->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]))
                         {{-- Hapus --}}
                         <x-button icon="o-trash" wire:click="delete({{ $lembur->id }})" wire:confirm="Apakah Anda yakin ingin menghapus dokumen ini?" class="btn-sm btn-ghost text-red-500" spinner />
                     @endif

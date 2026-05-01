@@ -17,7 +17,7 @@ class LemburService
         $user = \Illuminate\Support\Facades\Auth::user();
 
         return Lembur::query()
-            ->when(!in_array($user->role, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
@@ -45,7 +45,7 @@ class LemburService
         $user = \Illuminate\Support\Facades\Auth::user();
 
         return (int) Lembur::query()
-            ->when(!in_array($user->role, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->whereYear('tanggal_lembur', Carbon::now()->year)
@@ -57,7 +57,7 @@ class LemburService
         $user = \Illuminate\Support\Facades\Auth::user();
 
         return (int) Lembur::query()
-            ->when(!in_array($user->role, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->whereYear('tanggal_lembur', Carbon::now()->year)

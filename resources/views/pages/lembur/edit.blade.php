@@ -35,7 +35,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(Lembur $lembur)
     {
         $this->lembur = $lembur;
-        $this->isAdmin = in_array(Auth::user()->role, ['admin', 'operator']);
+        $this->isAdmin = in_array(Auth::user()->role->value, ['admin', 'operator']);
         
         $this->tanggal_lembur = $lembur->tanggal_lembur;
         $this->jumlah_jam = $lembur->jumlah_jam;
