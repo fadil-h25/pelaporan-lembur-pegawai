@@ -16,6 +16,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public int $perPage = 5;
 
     use WithPagination;
+    use \Mary\Traits\Toast;
 
     public function updatedSearch()
     {
@@ -60,6 +61,14 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function cetak($type, $id)
     {
         $lembur = Lembur::findOrFail($id);
+
+        if ($type === 'lpj') {
+            if (empty($lembur->hasil_kerja) || empty($lembur->dokumentasi)) {
+                $this->warning('Harap isi Hasil Kerja dan Dokumentasi terlebih dahulu melalui fitur Edit!');
+                return;
+            }
+        }
+
         $nomor = $this->service()->getNomorDatabase($lembur);
         return $this->service()->downloadCetak($type, $lembur, $nomor);
     }

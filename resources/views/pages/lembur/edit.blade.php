@@ -26,6 +26,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('required|string')]
     public $rencana_kerja;
 
+    #[Validate('nullable|string')]
+    public $hasil_kerja;
+
     #[Validate('nullable|image|max:2048')]
     public $dokumentasi;
 
@@ -38,6 +41,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->jumlah_jam = $lembur->jumlah_jam;
         $this->pembebanan_anggaran = $lembur->pembebanan_anggaran;
         $this->rencana_kerja = $lembur->rencana_kerja;
+        $this->hasil_kerja = $lembur->hasil_kerja;
     }
 
     public function save()
@@ -89,6 +93,8 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
             
             <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required @if(!$isAdmin) readonly disabled @endif />
+            
+            <x-textarea label="Hasil Kerja" wire:model="hasil_kerja" rows="4" placeholder="Tuliskan hasil pekerjaan lembur Anda di sini..." />
 
             <div class="mt-4">
                 @if($lembur->dokumentasi)
