@@ -15,7 +15,20 @@ class AdminOnly
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== \App\UserRole::ADMIN) {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $userRole = auth()->user()->role;
+        
+        // Handle both enum and string comparison
+        if ($userRole instanceof \App\UserRole) {
+            $isAdmin = $userRole === \App\UserRole::ADMIN;
+        } else {
+            $isAdmin = $userRole === 'admin';
+        }
+
+        if (!$isAdmin) {
             abort(403, 'Akses ditolak. Hanya admin yang dapat mengakses halaman ini.');
         }
 

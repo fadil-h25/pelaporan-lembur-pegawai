@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Volt::route('/profile', 'profile')->name('profile');
 
     // Pengaturan Sistem (hanya untuk admin)
-    Volt::route('/pengaturan-sistem', 'pengaturan-sistem')->name('pengaturan-sistem')->middleware('can:admin-only');
+    Volt::route('/pengaturan-sistem', 'pengaturan-sistem')->name('pengaturan-sistem')->middleware('admin-only');
 
     // Private Files Route
     Route::get('/private/dokumentasi/{filename}', function ($filename) {

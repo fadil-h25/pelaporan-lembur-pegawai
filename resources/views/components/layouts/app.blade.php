@@ -39,9 +39,18 @@
                         <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" />
                         <x-menu-item title="Dokumen Lembur" icon="o-document-text" link="/lembur" />
 
-                        @if (auth()->user() && auth()->user()->role === \App\UserRole::ADMIN)
-                            <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
-                            <x-menu-item title="Pengaturan Sistem" icon="o-cog-6-tooth" link="/pengaturan-sistem" />
+                        @if (auth()->check())
+                            @php
+                                $userRole = auth()->user()->role;
+                                $isAdmin =
+                                    $userRole instanceof \App\UserRole
+                                        ? $userRole === \App\UserRole::ADMIN
+                                        : $userRole === 'admin';
+                            @endphp
+                            @if ($isAdmin)
+                                <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
+                                <x-menu-item title="Pengaturan Sistem" icon="o-cog-6-tooth" link="/pengaturan-sistem" />
+                            @endif
                         @endif
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
                         <x-menu-separator />
