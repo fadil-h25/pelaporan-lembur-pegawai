@@ -27,7 +27,8 @@ Route::middleware('auth')->group(function () {
     // Profile
     Volt::route('/profile', 'profile')->name('profile');
 
-    // Pengaturan Sistem (hanya untuk admin)
+    // DEPRECATED: Pengaturan Sistem - sekarang menggunakan config file
+    // Route ini tetap ada untuk backward compatibility tapi tidak direkomendasikan
     Volt::route('/pengaturan-sistem', 'pengaturan-sistem')->name('pengaturan-sistem')->middleware('admin-only');
 
     // Private Files Route

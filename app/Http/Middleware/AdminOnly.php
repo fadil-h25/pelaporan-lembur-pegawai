@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * DEPRECATED: Middleware ini tidak digunakan lagi.
+ * System settings sekarang menggunakan config file, tidak ada lagi halaman admin
+ * Middleware ini tetap ada untuk backward compatibility tapi tidak direkomendasikan untuk digunakan.
+ */
 namespace App\Http\Middleware;
 
 use Closure;

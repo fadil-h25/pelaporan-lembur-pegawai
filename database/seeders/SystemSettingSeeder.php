@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * DEPRECATED: Seeder ini tidak digunakan lagi.
+ * System settings sekarang menggunakan config file (config/system.php)
+ * Seeder ini tetap ada untuk backward compatibility tapi tidak direkomendasikan untuk digunakan.
+ */
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;

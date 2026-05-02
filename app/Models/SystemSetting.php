@@ -1,13 +1,19 @@
 <?php
 
+/**
+ * DEPRECATED: Model ini tidak digunakan lagi.
+ * System settings sekarang menggunakan config file (config/system.php)
+ * Model ini tetap ada untuk backward compatibility tapi tidak direkomendasikan untuk digunakan.
+ */
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+// use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SystemSetting extends Model
 {
-    use HasFactory;
+    // use HasFactory;
 
     protected $fillable = [
         'nama_kasek',

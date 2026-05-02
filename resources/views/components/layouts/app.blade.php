@@ -49,7 +49,9 @@
                             @endphp
                             @if ($isAdmin)
                                 <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
-                                <x-menu-item title="Pengaturan Sistem" icon="o-cog-6-tooth" link="/pengaturan-sistem" />
+                                {{-- DEPRECATED: Pengaturan Sistem - sekarang menggunakan config file --}}
+                                <x-menu-item title="Pengaturan Sistem (Deprecated)" icon="o-cog-6-tooth"
+                                    link="/pengaturan-sistem" />
                             @endif
                         @endif
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}

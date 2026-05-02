@@ -1,4 +1,9 @@
 <?php
+/**
+ * DEPRECATED: Halaman ini tidak digunakan lagi.
+ * System settings sekarang menggunakan config file (config/system.php)
+ * Halaman ini tetap ada untuk backward compatibility tapi tidak direkomendasikan untuk digunakan.
+ */
 
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;

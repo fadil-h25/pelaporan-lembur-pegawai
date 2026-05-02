@@ -1,3 +1,80 @@
+# Sistem Pelaporan Lembur Pegawai
+
+Aplikasi web untuk mengelola dan melaporkan lembur pegawai menggunakan Laravel 12.
+
+## Fitur Utama
+
+- ✅ Manajemen pengguna (Admin, Operator, Pegawai)
+- ✅ Pengajuan dokumen lembur
+- ✅ Sistem nomor surat otomatis dengan logika sisipan
+- ✅ Export dokumen ke format Word (.docx)
+- ✅ Dashboard statistik
+- ✅ Role-based access control
+
+## Konfigurasi Sistem
+
+### System Settings
+
+Aplikasi menggunakan konfigurasi sistem yang disimpan di file `config/system.php`. Untuk mengubah pengaturan sistem, edit file tersebut langsung:
+
+```php
+<?php
+
+return [
+    'nama_kasek' => 'AWALUDDIN MUSTAFA, S.E., M.Si',  // Ubah nama kasek di sini
+    'nip_kasek' => '19740712 200212 1 006',           // Ubah NIP kasek di sini
+    'akhiran_surat' => '/SPKL/SN/',                   // Ubah akhiran surat di sini
+];
+```
+
+### Penjelasan Konfigurasi
+
+- `nama_kasek`: Nama lengkap Kepala Sekretariat yang akan muncul di dokumen cetak
+- `nip_kasek`: Nomor Induk Pegawai Kepala Sekretariat
+- `akhiran_surat`: Format akhir nomor surat (contoh: `/SPKL/SN/` akan menghasilkan `0001.0/SPKL/SN/05/2026`)
+
+### DEPRECATED Features
+
+Beberapa fitur berikut sudah tidak digunakan lagi dan digantikan dengan config file:
+
+- Halaman `/pengaturan-sistem` (deprecated)
+- Tabel `system_settings` di database (deprecated)
+- Model `SystemSetting` (deprecated)
+- Environment variables `NAMA_KASEK`, `NIP_KASEK`, `AKHIRAN_SURAT` (deprecated)
+
+Fitur deprecated tetap ada untuk backward compatibility tapi tidak direkomendasikan untuk digunakan.
+
+## Instalasi
+
+1. Clone repository
+2. Copy `.env.example` ke `.env`
+3. Konfigurasi database di `.env`
+4. Jalankan `composer install`
+5. Jalankan `php artisan migrate`
+6. Jalankan `php artisan serve`
+
+## Penggunaan
+
+### Login
+
+- **Admin**: username admin, password sesuai setup
+- **Operator**: username operator, password sesuai setup
+- **Pegawai**: username pegawai, password sesuai setup
+
+### Fitur Admin
+
+- Manajemen user
+- Melihat semua dokumen lembur
+- Mengubah konfigurasi sistem via `.env`
+
+### Fitur Pegawai
+
+- Mengajukan lembur
+- Melihat riwayat lembur sendiri
+- Download dokumen SPK dan LPJ
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

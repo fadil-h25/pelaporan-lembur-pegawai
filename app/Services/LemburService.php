@@ -158,10 +158,9 @@ class LemburService
      */
     public function formatNomorSurat(Lembur $lembur): string
     {
-        $settings = \App\Models\SystemSetting::getSettings();
         $t = Carbon::parse($lembur->tanggal_lembur);
         $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
-        return "{$noUtama}.{$lembur->no_sisipan}{$settings->akhiran_surat}" . $t->format('m/Y');
+        return "{$noUtama}.{$lembur->no_sisipan}" . config('system.akhiran_surat') . $t->format('m/Y');
     }
 
     /**
@@ -186,7 +185,6 @@ class LemburService
      */
     public function downloadCetak($type, Lembur $lembur)
     {
-        $settings = \App\Models\SystemSetting::getSettings();
         $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
@@ -204,13 +202,12 @@ class LemburService
         $tp->setValue('pekerjaan', $lembur->rencana_kerja);
         $tp->setValue('hasil', $lembur->hasil_kerja);
         $tp->setValue('anggaran', $lembur->pembebanan_anggaran);
-        $tp->setValue('nama_kasek', $settings->nama_kasek);
-        $tp->setValue('nip_kasek', $settings->nip_kasek);
+        $tp->setValue('nama_kasek', config('system.nama_kasek'));
+        $tp->setValue('nip_kasek', config('system.nip_kasek'));
 
-        if ($lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $lembur->dokumentasi)) {
-            $pathImage = \Illuminate\Support\Facades\Storage::disk('local')->path('dokumentasi/' . $lembur->dokumentasi);
+        if ($lembur->dokumentasi && file_exists(storage_path('app/public/' . $lembur->dokumentasi))) {
             $tp->setImageValue('gambar', [
-                'path' => $pathImage,
+                'path' => storage_path('app/public/' . $lembur->dokumentasi),
                 'width' => 400,
                 'height' => 300,
                 'ratio' => true
