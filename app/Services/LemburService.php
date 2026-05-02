@@ -190,14 +190,14 @@ class LemburService
         $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
-        
+
         $nomorSurat = $this->formatNomorSurat($lembur);
         $tp->setValue('no_surat', $nomorSurat);
         $tp->setValue('nama', $lembur->nama);
         $tp->setValue('nip', $lembur->nip);
         $tp->setValue('jabatan', $lembur->jabatan);
         $tp->setValue('golongan', $lembur->golongan);
-        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y')); 
+        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y'));
         $tp->setValue('tanggal', $t->translatedFormat('d F Y'));
         $tp->setValue('jam', $lembur->jumlah_jam);
         $tp->setValue('terbilang', trim($this->terbilang($lembur->jumlah_jam)));
@@ -206,6 +206,11 @@ class LemburService
         $tp->setValue('anggaran', $lembur->pembebanan_anggaran);
         $tp->setValue('nama_kasek', $settings->nama_kasek);
         $tp->setValue('nip_kasek', $settings->nip_kasek);
+
+        if ($lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $lembur->dokumentasi)) {
+            $pathImage = \Illuminate\Support\Facades\Storage::disk('local')->path('dokumentasi/' . $lembur->dokumentasi);
+            $tp->setImageValue('gambar', [
+                'path' => $pathImage,
                 'width' => 400,
                 'height' => 300,
                 'ratio' => true
