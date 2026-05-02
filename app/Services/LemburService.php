@@ -31,16 +31,16 @@ class LemburService
                 $query->whereDate('tanggal_lembur', '<=', $endDate);
             })
             ->when($search, function ($query) use ($search) {
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nama', 'like', '%' . $search . '%')
-                      ->orWhere('nip', 'like', '%' . $search . '%')
-                      ->orWhere('rencana_kerja', 'like', '%' . $search . '%');
+                        ->orWhere('nip', 'like', '%' . $search . '%')
+                        ->orWhere('rencana_kerja', 'like', '%' . $search . '%');
                 });
             })
-            ->when($sort === 'terbaru', fn ($q) => $q->orderBy('tanggal_lembur', 'desc'))
-            ->when($sort === 'terlama', fn ($q) => $q->orderBy('tanggal_lembur', 'asc'))
-            ->when($sort === 'nomor_asc', fn ($q) => $q->orderBy('id', 'asc'))
-            ->when($sort === 'nomor_desc', fn ($q) => $q->orderBy('id', 'desc'))
+            ->when($sort === 'terbaru', fn($q) => $q->orderBy('tanggal_lembur', 'desc'))
+            ->when($sort === 'terlama', fn($q) => $q->orderBy('tanggal_lembur', 'asc'))
+            ->when($sort === 'nomor_asc', fn($q) => $q->orderBy('id', 'asc'))
+            ->when($sort === 'nomor_desc', fn($q) => $q->orderBy('id', 'desc'))
             ->paginate($perPage);
     }
 
@@ -72,10 +72,15 @@ class LemburService
     }
 
     /**
-     * Simpan Data Lembur Baru (Create)
+     * Simpan Data Lembur Baru (Create) - Auto generate nomor surat
      */
     public function create(array $data): Lembur
     {
+        // Generate nomor surat berdasarkan logika sisipan
+        $nomor = $this->generateNomorSurat($data['tanggal_lembur']);
+        $data['no_utama'] = $nomor['no_utama'];
+        $data['no_sisipan'] = $nomor['no_sisipan'];
+
         return Lembur::create($data);
     }
 
@@ -104,6 +109,61 @@ class LemburService
     }
 
     /**
+     * Generate nomor surat (no_utama dan no_sisipan) berdasarkan logika sisipan
+     * - Normal input (tidak ada surat lebih baru): no_utama++, no_sisipan = 0
+     * - Sisipan input (ada surat lebih baru): no_utama = no induk, no_sisipan++
+     */
+    public function generateNomorSurat(string $tanggalLembur): array
+    {
+        $tanggal = Carbon::parse($tanggalLembur)->startOfDay();
+
+        // Cek apakah ada data lembur di tanggal SETELAHNYA
+        $adaDataLebihBaru = Lembur::where('tanggal_lembur', '>', $tanggal)->exists();
+
+        if (!$adaDataLebihBaru) {
+            // INPUT NORMAL - ambil nomor utama terbesar + 1
+            $noUtamaTerbesar = Lembur::max('no_utama') ?? 0;
+            $noUtamaBaru = $noUtamaTerbesar + 1;
+            $noSisipanBaru = 0;
+        } else {
+            // INPUT SISIPAN - cari nomor induk dari surat terakhir sebelum tanggal ini
+            $nomorInduk = Lembur::where('tanggal_lembur', '<', $tanggal)
+                ->orderBy('tanggal_lembur', 'desc')
+                ->orderBy('no_utama', 'desc')
+                ->value('no_utama');
+
+            if ($nomorInduk === null) {
+                // Tidak ada surat sebelumnya, mulai dari 1
+                $noUtamaBaru = 1;
+                $noSisipanBaru = 0;
+            } else {
+                // Cari sisipan terakhir dari nomor induk tersebut
+                $sisipanTerbesar = Lembur::where('no_utama', $nomorInduk)
+                    ->max('no_sisipan') ?? 0;
+
+                $noUtamaBaru = $nomorInduk;
+                $noSisipanBaru = $sisipanTerbesar + 1;
+            }
+        }
+
+        return [
+            'no_utama' => $noUtamaBaru,
+            'no_sisipan' => $noSisipanBaru,
+        ];
+    }
+
+    /**
+     * Format nomor surat lengkap dengan pattern: XXXX.X/SPKL/SN/MM/YYYY
+     * contoh: 0001.0/SPKL/SN/05/2026 atau 0001.1/SPKL/SN/05/2026
+     */
+    public function formatNomorSurat(Lembur $lembur): string
+    {
+        $t = Carbon::parse($lembur->tanggal_lembur);
+        $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
+        return "{$noUtama}.{$lembur->no_sisipan}/SPKL/SN/" . $t->format('m/Y');
+    }
+
+    /**
      * Fitur Terbilang
      */
     public function terbilang($n): string
@@ -123,18 +183,19 @@ class LemburService
     /**
      * Proses Download Dokumen Cetak (.docx)
      */
-    public function downloadCetak($type, Lembur $lembur, $nomor)
+    public function downloadCetak($type, Lembur $lembur)
     {
         $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
-        
-        $tp->setValue('no_surat', str_pad($nomor, 4, '0', STR_PAD_LEFT) . '/SPKL/SN/' . $t->format('m/Y'));
+
+        $nomorSurat = $this->formatNomorSurat($lembur);
+        $tp->setValue('no_surat', $nomorSurat);
         $tp->setValue('nama', $lembur->nama);
         $tp->setValue('nip', $lembur->nip);
         $tp->setValue('jabatan', $lembur->jabatan);
         $tp->setValue('golongan', $lembur->golongan);
-        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y')); 
+        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y'));
         $tp->setValue('tanggal', $t->translatedFormat('d F Y'));
         $tp->setValue('jam', $lembur->jumlah_jam);
         $tp->setValue('terbilang', trim($this->terbilang($lembur->jumlah_jam)));
@@ -143,7 +204,7 @@ class LemburService
         $tp->setValue('anggaran', $lembur->pembebanan_anggaran);
         $tp->setValue('nama_kasek', 'AWALUDDIN MUSTAFA, S.E., M.Si');
         $tp->setValue('nip_kasek', '19740712 200212 1 006');
-        
+
         if ($lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $lembur->dokumentasi)) {
             $pathImage = \Illuminate\Support\Facades\Storage::disk('local')->path('dokumentasi/' . $lembur->dokumentasi);
             $tp->setImageValue('gambar', [
@@ -155,7 +216,7 @@ class LemburService
         } else {
             $tp->setValue('gambar', 'Tidak ada dokumentasi');
         }
-        
+
         $path = storage_path('app/public/' . $type . '_' . $lembur->id . '_' . time() . '.docx');
         $tp->saveAs($path);
 

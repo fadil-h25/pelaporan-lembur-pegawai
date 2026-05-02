@@ -1,5 +1,6 @@
 <?php
 
+use App\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,7 +23,7 @@ return new class extends Migration
             $table->string('nip')->nullable(); // NIP Pegawai
             $table->string('golongan')->nullable(); // Contoh: IV/a, III/b
             $table->string('jabatan')->nullable(); // Contoh: Kepala Bagian, Staf
-            $table->enum('role', ['admin', 'pegawai'])->default('pegawai'); // Hak Akses
+            $table->string('role', 20)->default(UserRole::PEGAWAI->value); // Hak Akses
 
             $table->rememberToken();
             $table->timestamps();

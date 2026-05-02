@@ -25,6 +25,8 @@ class Lembur extends Model
         'nama_kasek',
         'nip_kasek',
         'dokumentasi',
+        'no_utama',
+        'no_sisipan',
     ];
 
     // Relasi balik ke User (Opsional, tapi sangat berguna nanti)
