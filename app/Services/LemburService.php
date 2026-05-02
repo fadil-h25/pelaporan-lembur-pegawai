@@ -122,8 +122,8 @@ class LemburService
 
         if (!$adaDataLebihBaru) {
             // INPUT NORMAL - ambil nomor utama terbesar + 1
-            $noUtamaTerbesar = Lembur::max('no_utama') ?? 0;
-            $noUtamaBaru = $noUtamaTerbesar + 1;
+            $noUtamaTerbesar = Lembur::max('no_utama') ?? (config('system.nomor_surat_awal') - 1);
+            $noUtamaBaru = max($noUtamaTerbesar + 1, config('system.nomor_surat_awal'));
             $noSisipanBaru = 0;
         } else {
             // INPUT SISIPAN - cari nomor induk dari surat terakhir sebelum tanggal ini
@@ -133,8 +133,8 @@ class LemburService
                 ->value('no_utama');
 
             if ($nomorInduk === null) {
-                // Tidak ada surat sebelumnya, mulai dari 1
-                $noUtamaBaru = 1;
+                // Tidak ada surat sebelumnya, mulai dari nomor awal config
+                $noUtamaBaru = config('system.nomor_surat_awal');
                 $noSisipanBaru = 0;
             } else {
                 // Cari sisipan terakhir dari nomor induk tersebut

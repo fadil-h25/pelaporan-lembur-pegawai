@@ -23,6 +23,7 @@ Aplikasi menggunakan konfigurasi sistem yang disimpan di file `config/system.php
 return [
     'nama_kasek' => 'AWALUDDIN MUSTAFA, S.E., M.Si',  // Ubah nama kasek di sini
     'nip_kasek' => '19740712 200212 1 006',           // Ubah NIP kasek di sini
+    'nomor_surat_awal' => 1,                           // Nomor surat dimulai dari berapa
     'akhiran_surat_spk' => '/SPKL/SN/',               // Ubah akhiran surat SPK di sini
     'akhiran_surat_lpj' => '/LPJ/SN/',                // Ubah akhiran surat LPJ di sini
 ];
@@ -44,6 +45,7 @@ Contoh:
 
 - `nama_kasek`: Nama lengkap Kepala Sekretariat yang akan muncul di dokumen cetak
 - `nip_kasek`: Nomor Induk Pegawai Kepala Sekretariat
+- `nomor_surat_awal`: Nomor surat pertama yang akan digunakan (default: 1)
 - `akhiran_surat_spk`: Format akhir nomor surat untuk SPK
 - `akhiran_surat_lpj`: Format akhir nomor surat untuk LPJ
 
