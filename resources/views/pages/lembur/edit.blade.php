@@ -35,7 +35,10 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(Lembur $lembur)
     {
         $this->lembur = $lembur;
-        $this->isAdmin = in_array(Auth::user()->role->value, ['admin', 'operator']);
+        
+        $role = Auth::user()->role;
+        $roleValue = $role instanceof \BackedEnum ? $role->value : $role;
+        $this->isAdmin = in_array($roleValue, ['admin', 'operator']);
         
         $this->tanggal_lembur = $lembur->tanggal_lembur;
         $this->jumlah_jam = $lembur->jumlah_jam;
@@ -87,12 +90,12 @@ new #[Layout('components.layouts.app')] class extends Component {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <x-input label="Nama" value="{{ $lembur->nama }}" readonly />
                 <x-input label="NIP" value="{{ $lembur->nip }}" readonly />
-                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required @if(!$isAdmin) readonly disabled @endif />
-                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required @if(!$isAdmin) readonly disabled @endif />
-                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required @if(!$isAdmin) readonly disabled @endif />
+                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
+                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
+                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
             </div>
             
-            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required @if(!$isAdmin) readonly disabled @endif />
+            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
             
             <x-textarea label="Hasil Kerja" wire:model="hasil_kerja" rows="4" placeholder="Tuliskan hasil pekerjaan lembur Anda di sini..." />
 

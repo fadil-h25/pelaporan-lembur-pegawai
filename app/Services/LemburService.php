@@ -15,9 +15,10 @@ class LemburService
     public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
     {
         $user = \Illuminate\Support\Facades\Auth::user();
+        $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
 
         return Lembur::query()
-            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($roleValue, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
@@ -46,9 +47,10 @@ class LemburService
     public function totalJamTahunIni(): int
     {
         $user = \Illuminate\Support\Facades\Auth::user();
+        $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
 
         return (int) Lembur::query()
-            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($roleValue, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->whereYear('tanggal_lembur', Carbon::now()->year)
@@ -58,9 +60,10 @@ class LemburService
     public function totalJamBulanIni(): int
     {
         $user = \Illuminate\Support\Facades\Auth::user();
+        $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
 
         return (int) Lembur::query()
-            ->when(!in_array($user->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+            ->when(!in_array($roleValue, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->whereYear('tanggal_lembur', Carbon::now()->year)
