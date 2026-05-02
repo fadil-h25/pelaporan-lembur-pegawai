@@ -35,11 +35,11 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(Lembur $lembur)
     {
         $this->lembur = $lembur;
-        
+
         $role = Auth::user()->role;
         $roleValue = $role instanceof \BackedEnum ? $role->value : $role;
         $this->isAdmin = in_array($roleValue, ['admin', 'operator']);
-        
+
         $this->tanggal_lembur = $lembur->tanggal_lembur;
         $this->jumlah_jam = $lembur->jumlah_jam;
         $this->pembebanan_anggaran = $lembur->pembebanan_anggaran;
@@ -56,7 +56,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             if ($this->lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $this->lembur->dokumentasi)) {
                 \Illuminate\Support\Facades\Storage::disk('local')->delete('dokumentasi/' . $this->lembur->dokumentasi);
             }
-            
+
             $path = $this->dokumentasi->store('dokumentasi', 'local');
             $validated['dokumentasi'] = basename($path);
         } else {
@@ -80,35 +80,41 @@ new #[Layout('components.layouts.app')] class extends Component {
 ?>
 
 <div>
-    <x-custom-header 
-        title="Edit Dokumen Lembur" 
-        subtitle="Perbarui data pengajuan lembur" 
-    />
+    <x-custom-header title="Edit Dokumen Lembur" subtitle="Perbarui data pengajuan lembur" />
 
     <x-card>
         <x-form wire:submit="save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <x-input label="Nomor Surat"
+                    value="{{ app(\App\Services\LemburService::class)->formatNomorSurat($lembur) }}" readonly disabled />
                 <x-input label="Nama" value="{{ $lembur->nama }}" readonly />
                 <x-input label="NIP" value="{{ $lembur->nip }}" readonly />
-                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
-                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
-                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
+                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required :readonly="!$isAdmin"
+                    :disabled="!$isAdmin" />
+                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required :readonly="!$isAdmin"
+                    :disabled="!$isAdmin" />
+                <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required :readonly="!$isAdmin"
+                    :disabled="!$isAdmin" />
             </div>
-            
-            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required :readonly="!$isAdmin" :disabled="!$isAdmin" />
-            
-            <x-textarea label="Hasil Kerja" wire:model="hasil_kerja" rows="4" placeholder="Tuliskan hasil pekerjaan lembur Anda di sini..." />
+
+            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required :readonly="!$isAdmin"
+                :disabled="!$isAdmin" />
+
+            <x-textarea label="Hasil Kerja" wire:model="hasil_kerja" rows="4"
+                placeholder="Tuliskan hasil pekerjaan lembur Anda di sini..." />
 
             <div class="mt-4">
-                @if($lembur->dokumentasi)
+                @if ($lembur->dokumentasi)
                     <div class="mb-2">
                         <span class="text-sm text-gray-500">Dokumentasi Saat Ini:</span>
                         <div class="mt-1">
-                            <img src="{{ route('private.dokumentasi', ['filename' => $lembur->dokumentasi]) }}" alt="Dokumentasi" class="h-32 object-cover rounded shadow">
+                            <img src="{{ route('private.dokumentasi', ['filename' => $lembur->dokumentasi]) }}"
+                                alt="Dokumentasi" class="h-32 object-cover rounded shadow">
                         </div>
                     </div>
                 @endif
-                <x-file label="Upload Dokumentasi Baru (Opsional)" wire:model="dokumentasi" accept="image/*" hint="Maksimal 2MB. Kosongkan jika tidak ingin mengubah." />
+                <x-file label="Upload Dokumentasi Baru (Opsional)" wire:model="dokumentasi" accept="image/*"
+                    hint="Maksimal 2MB. Kosongkan jika tidak ingin mengubah." />
             </div>
 
             <x-slot:actions>
