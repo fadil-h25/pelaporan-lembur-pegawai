@@ -146,6 +146,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <span class="text-error font-bold">{{ $fullNomor }}</span>
             @endscope
 
+            {{-- Custom Kolom Tanggal Lembur --}}
+            @scope('cell_tanggal_lembur', $lembur)
+                {{ \Carbon\Carbon::parse($lembur->tanggal_lembur)->translatedFormat('d F Y') }}
+            @endscope
+
             {{-- Kolom Aksi --}}
             @scope('actions', $lembur)
                 <div class="flex gap-2">
