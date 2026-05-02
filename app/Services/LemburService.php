@@ -153,14 +153,15 @@ class LemburService
     }
 
     /**
-     * Format nomor surat lengkap dengan pattern: XXXX.X/SPKL/SN/MM/YYYY
+     * Format nomor surat lengkap dengan pattern: XXXX.X/AKHIRAN_SURAT/MM/YYYY
      * contoh: 0001.0/SPKL/SN/05/2026 atau 0001.1/SPKL/SN/05/2026
      */
     public function formatNomorSurat(Lembur $lembur): string
     {
+        $settings = \App\Models\SystemSetting::getSettings();
         $t = Carbon::parse($lembur->tanggal_lembur);
         $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
-        return "{$noUtama}.{$lembur->no_sisipan}/SPKL/SN/" . $t->format('m/Y');
+        return "{$noUtama}.{$lembur->no_sisipan}{$settings->akhiran_surat}" . $t->format('m/Y');
     }
 
     /**
@@ -185,30 +186,26 @@ class LemburService
      */
     public function downloadCetak($type, Lembur $lembur)
     {
+        $settings = \App\Models\SystemSetting::getSettings();
         $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
-
+        
         $nomorSurat = $this->formatNomorSurat($lembur);
         $tp->setValue('no_surat', $nomorSurat);
         $tp->setValue('nama', $lembur->nama);
         $tp->setValue('nip', $lembur->nip);
         $tp->setValue('jabatan', $lembur->jabatan);
         $tp->setValue('golongan', $lembur->golongan);
-        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y'));
+        $tp->setValue('hari_tanggal', $t->translatedFormat('l / d F Y')); 
         $tp->setValue('tanggal', $t->translatedFormat('d F Y'));
         $tp->setValue('jam', $lembur->jumlah_jam);
         $tp->setValue('terbilang', trim($this->terbilang($lembur->jumlah_jam)));
         $tp->setValue('pekerjaan', $lembur->rencana_kerja);
         $tp->setValue('hasil', $lembur->hasil_kerja);
         $tp->setValue('anggaran', $lembur->pembebanan_anggaran);
-        $tp->setValue('nama_kasek', 'AWALUDDIN MUSTAFA, S.E., M.Si');
-        $tp->setValue('nip_kasek', '19740712 200212 1 006');
-
-        if ($lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $lembur->dokumentasi)) {
-            $pathImage = \Illuminate\Support\Facades\Storage::disk('local')->path('dokumentasi/' . $lembur->dokumentasi);
-            $tp->setImageValue('gambar', [
-                'path' => $pathImage,
+        $tp->setValue('nama_kasek', $settings->nama_kasek);
+        $tp->setValue('nip_kasek', $settings->nip_kasek);
                 'width' => 400,
                 'height' => 300,
                 'ratio' => true

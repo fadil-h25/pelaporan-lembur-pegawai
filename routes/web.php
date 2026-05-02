@@ -13,10 +13,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     // Dashboard
     Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
-    
+
     // Management User
     Volt::route('/management-user', 'management-user')->name('management-user');
-    
+
     // Manajemen Dokumen Lembur
     Route::prefix('lembur')->name('lembur.')->group(function () {
         Volt::route('/', 'lembur.index')->name('index');
@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
 
     // Profile
     Volt::route('/profile', 'profile')->name('profile');
+
+    // Pengaturan Sistem (hanya untuk admin)
+    Volt::route('/pengaturan-sistem', 'pengaturan-sistem')->name('pengaturan-sistem')->middleware('can:admin-only');
 
     // Private Files Route
     Route::get('/private/dokumentasi/{filename}', function ($filename) {

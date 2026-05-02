@@ -38,23 +38,18 @@
                     <div class="mt-2">
                         <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" />
                         <x-menu-item title="Dokumen Lembur" icon="o-document-text" link="/lembur" />
-                        
-                        @if(auth()->user() && auth()->user()->role === \App\UserRole::ADMIN)
+
+                        @if (auth()->user() && auth()->user()->role === \App\UserRole::ADMIN)
                             <x-menu-item title="Manajemen User" icon="o-users" link="/management-user" />
+                            <x-menu-item title="Pengaturan Sistem" icon="o-cog-6-tooth" link="/pengaturan-sistem" />
                         @endif
                         {{-- Garis pemisah supaya menu utama gak nyampur sama menu logout --}}
-<x-menu-separator />
+                        <x-menu-separator />
 
-<x-menu-item title="Profile" icon="o-user" link="/profile" />
+                        <x-menu-item title="Profile" icon="o-user" link="/profile" />
 
-<x-menu-item 
-    title="Logout" 
-    icon="o-power" 
-    class="text-error-content bg-error/10 hover:bg-error/20" 
-   
-    no-wire-navigate 
-    link="/logout"
-/>
+                        <x-menu-item title="Logout" icon="o-power"
+                            class="text-error-content bg-error/10 hover:bg-error/20" no-wire-navigate link="/logout" />
                     </div>
                 </x-menu>
             </x-slot:sidebar>
