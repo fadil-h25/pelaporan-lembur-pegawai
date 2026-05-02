@@ -154,13 +154,14 @@ class LemburService
 
     /**
      * Format nomor surat lengkap dengan pattern: XXXX.X/AKHIRAN_SURAT/MM/YYYY
-     * contoh: 0001.0/SPKL/SN/05/2026 atau 0001.1/SPKL/SN/05/2026
+     * contoh: 0001.0/SPKL/SN/05/2026 atau 0001.1/LPJ/SN/05/2026
      */
-    public function formatNomorSurat(Lembur $lembur): string
+    public function formatNomorSurat(Lembur $lembur, string $type = 'spk'): string
     {
         $t = Carbon::parse($lembur->tanggal_lembur);
         $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
-        return "{$noUtama}.{$lembur->no_sisipan}" . config('system.akhiran_surat') . $t->format('m/Y');
+        $akhiran = $type === 'lpj' ? config('system.akhiran_surat_lpj') : config('system.akhiran_surat_spk');
+        return "{$noUtama}.{$lembur->no_sisipan}" . $akhiran . $t->format('m/Y');
     }
 
     /**
@@ -189,7 +190,7 @@ class LemburService
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
 
-        $nomorSurat = $this->formatNomorSurat($lembur);
+        $nomorSurat = $this->formatNomorSurat($lembur, $type);
         $tp->setValue('no_surat', $nomorSurat);
         $tp->setValue('nama', $lembur->nama);
         $tp->setValue('nip', $lembur->nip);
