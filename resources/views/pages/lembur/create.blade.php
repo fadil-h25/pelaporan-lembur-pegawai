@@ -6,9 +6,10 @@ use Livewire\Attributes\Validate;
 use Livewire\WithFileUploads;
 use App\Services\LemburService;
 use Illuminate\Support\Facades\Auth;
+use Mary\Traits\Toast;
 
 new #[Layout('components.layouts.app')] class extends Component {
-    use WithFileUploads;
+    use WithFileUploads, Toast;
 
     #[Validate('required|date')]
     public $tanggal_lembur;
@@ -32,7 +33,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         // Validasi tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat
         $tanggalLemburPertama = \App\Models\Lembur::min('tanggal_lembur');
         if ($tanggalLemburPertama && $validated['tanggal_lembur'] < $tanggalLemburPertama) {
-            session()->flash('error', 'Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')');
+            $this->error('Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')', position: 'toast-top toast-end');
             return;
         }
 

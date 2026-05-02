@@ -46,13 +46,20 @@ Contoh:
 Sistem memiliki validasi otomatis untuk mencegah input tanggal lembur yang tidak valid:
 
 - **Tanggal lembur tidak boleh di bawah tanggal lembur pertama** yang tercatat di sistem
-- Jika user mencoba input tanggal yang lebih kecil, akan muncul pesan error toast
+- Jika user mencoba input tanggal yang lebih kecil, akan muncul **toast error** Mary UI di posisi `toast-bottom toast-end`
 - Validasi berlaku untuk halaman **Buat Lembur** dan **Edit Lembur**
 - Admin dapat mengubah tanggal, tapi tetap tunduk pada aturan validasi ini
 
+**Toast Implementation:**
+```php
+use Mary\Traits\Toast;  // Import trait
+// ...
+$this->error('Pesan error...', position: 'toast-bottom toast-end');  // Gunakan method error
+```
+
 **Contoh skenario:**
 - Tanggal lembur pertama di sistem: `2 Mei 2026`
-- User mencoba input tanggal: `30 April 2026` → ❌ **Error: "Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (2 Mei 2026)"**
+- User mencoba input tanggal: `30 April 2026` → ❌ **Toast error merah di kanan bawah**: "Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (2 Mei 2026)"
 - User input tanggal: `5 Mei 2026` → ✅ **Valid**
 
 ### DEPRECATED Features

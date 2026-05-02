@@ -7,9 +7,10 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use App\Services\LemburService;
 use App\Models\Lembur;
+use Mary\Traits\Toast;
 
 new #[Layout('components.layouts.app')] class extends Component {
-    use WithFileUploads;
+    use WithFileUploads, Toast;
 
     public Lembur $lembur;
     public bool $isAdmin = false;
@@ -56,7 +57,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         if (isset($validated['tanggal_lembur']) && $validated['tanggal_lembur'] !== $this->lembur->tanggal_lembur) {
             $tanggalLemburPertama = \App\Models\Lembur::where('id', '!=', $this->lembur->id)->min('tanggal_lembur');
             if ($tanggalLemburPertama && $validated['tanggal_lembur'] < $tanggalLemburPertama) {
-                $this->error('Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')');
+                $this->error('Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')', position: 'toast-top toast-end');
                 return;
             }
         }
