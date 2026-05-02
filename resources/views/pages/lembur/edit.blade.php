@@ -51,6 +51,16 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $validated = $this->validate();
 
+        // Validasi tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat
+        // (hanya jika tanggal diubah)
+        if (isset($validated['tanggal_lembur']) && $validated['tanggal_lembur'] !== $this->lembur->tanggal_lembur) {
+            $tanggalLemburPertama = \App\Models\Lembur::where('id', '!=', $this->lembur->id)->min('tanggal_lembur');
+            if ($tanggalLemburPertama && $validated['tanggal_lembur'] < $tanggalLemburPertama) {
+                $this->error('Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')');
+                return;
+            }
+        }
+
         if ($this->dokumentasi) {
             // Hapus gambar lama jika ada (opsional, tapi disarankan agar storage tidak penuh)
             if ($this->lembur->dokumentasi && \Illuminate\Support\Facades\Storage::disk('local')->exists('dokumentasi/' . $this->lembur->dokumentasi)) {

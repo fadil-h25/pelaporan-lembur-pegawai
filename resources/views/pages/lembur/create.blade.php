@@ -28,7 +28,14 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function save()
     {
         $validated = $this->validate();
-        
+
+        // Validasi tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat
+        $tanggalLemburPertama = \App\Models\Lembur::min('tanggal_lembur');
+        if ($tanggalLemburPertama && $validated['tanggal_lembur'] < $tanggalLemburPertama) {
+            session()->flash('error', 'Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (' . \Carbon\Carbon::parse($tanggalLemburPertama)->translatedFormat('d F Y') . ')');
+            return;
+        }
+
         $user = Auth::user();
 
         if ($this->dokumentasi) {
@@ -54,10 +61,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 ?>
 
 <div>
-    <x-custom-header 
-        title="Buat Dokumen Lembur" 
-        subtitle="Isi form di bawah untuk mengajukan lembur" 
-    />
+    <x-custom-header title="Buat Dokumen Lembur" subtitle="Isi form di bawah untuk mengajukan lembur" />
 
     <x-card>
         <x-form wire:submit="save">
@@ -68,8 +72,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" placeholder="Contoh: 2" required />
                 <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required />
             </div>
-            
-            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" placeholder="Contoh: Menindaklanjuti arahan atasan..." rows="4" required />
+
+            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja"
+                placeholder="Contoh: Menindaklanjuti arahan atasan..." rows="4" required />
 
             <div class="mt-4">
                 <x-file label="Dokumentasi (Opsional)" wire:model="dokumentasi" accept="image/*" hint="Maksimal 2MB" />
@@ -77,7 +82,8 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <x-slot:actions>
                 <x-button label="Batal" link="/lembur" class="btn-ghost" />
-                <x-button label="Simpan & Ajukan" type="submit" icon="o-paper-airplane" class="btn-success text-white" spinner="save" />
+                <x-button label="Simpan & Ajukan" type="submit" icon="o-paper-airplane" class="btn-success text-white"
+                    spinner="save" />
             </x-slot:actions>
         </x-form>
     </x-card>

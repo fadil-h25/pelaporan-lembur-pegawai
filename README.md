@@ -41,13 +41,19 @@ Contoh:
 - `0001/LPJ/SN/05/2026` (LPJ nomor utama)
 - `0001.2/LPJ/SN/05/2026` (LPJ sisipan kedua)
 
-### Penjelasan Konfigurasi
+### Validasi Tanggal Lembur
 
-- `nama_kasek`: Nama lengkap Kepala Sekretariat yang akan muncul di dokumen cetak
-- `nip_kasek`: Nomor Induk Pegawai Kepala Sekretariat
-- `nomor_surat_awal`: Nomor surat pertama yang akan digunakan (default: 1)
-- `akhiran_surat_spk`: Format akhir nomor surat untuk SPK
-- `akhiran_surat_lpj`: Format akhir nomor surat untuk LPJ
+Sistem memiliki validasi otomatis untuk mencegah input tanggal lembur yang tidak valid:
+
+- **Tanggal lembur tidak boleh di bawah tanggal lembur pertama** yang tercatat di sistem
+- Jika user mencoba input tanggal yang lebih kecil, akan muncul pesan error toast
+- Validasi berlaku untuk halaman **Buat Lembur** dan **Edit Lembur**
+- Admin dapat mengubah tanggal, tapi tetap tunduk pada aturan validasi ini
+
+**Contoh skenario:**
+- Tanggal lembur pertama di sistem: `2 Mei 2026`
+- User mencoba input tanggal: `30 April 2026` → ❌ **Error: "Tanggal lembur tidak boleh di bawah tanggal lembur pertama yang tercatat di sistem (2 Mei 2026)"**
+- User input tanggal: `5 Mei 2026` → ✅ **Valid**
 
 ### DEPRECATED Features
 
