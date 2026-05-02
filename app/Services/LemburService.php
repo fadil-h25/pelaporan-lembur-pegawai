@@ -153,15 +153,24 @@ class LemburService
     }
 
     /**
-     * Format nomor surat lengkap dengan pattern: XXXX.X/AKHIRAN_SURAT/MM/YYYY
-     * contoh: 0001.0/SPKL/SN/05/2026 atau 0001.1/LPJ/SN/05/2026
+     * Format nomor surat lengkap dengan pattern:
+     * - XXXX/AKHIRAN_SURAT/MM/YYYY (untuk nomor utama tanpa sisipan)
+     * - XXXX.X/AKHIRAN_SURAT/MM/YYYY (untuk nomor dengan sisipan > 0)
+     *
+     * contoh:
+     * - 0001/SPKL/SN/05/2026 (untuk no_sisipan = 0)
+     * - 0001.1/LPJ/SN/05/2026 (untuk no_sisipan = 1)
      */
     public function formatNomorSurat(Lembur $lembur, string $type = 'spk'): string
     {
         $t = Carbon::parse($lembur->tanggal_lembur);
         $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
         $akhiran = $type === 'lpj' ? config('system.akhiran_surat_lpj') : config('system.akhiran_surat_spk');
-        return "{$noUtama}.{$lembur->no_sisipan}" . $akhiran . $t->format('m/Y');
+
+        // Jika no_sisipan adalah 0, tidak tampilkan .0
+        $nomor = $lembur->no_sisipan == 0 ? $noUtama : "{$noUtama}.{$lembur->no_sisipan}";
+
+        return $nomor . $akhiran . $t->format('m/Y');
     }
 
     /**

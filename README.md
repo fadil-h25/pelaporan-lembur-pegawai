@@ -28,12 +28,24 @@ return [
 ];
 ```
 
+### Format Nomor Surat
+
+Nomor surat menggunakan format:
+- **XXXX/AKHIRAN_SURAT/MM/YYYY** untuk nomor utama (tanpa sisipan)
+- **XXXX.X/AKHIRAN_SURAT/MM/YYYY** untuk nomor dengan sisipan
+
+Contoh:
+- `0001/SPKL/SN/05/2026` (SPK nomor utama)
+- `0001.1/SPKL/SN/05/2026` (SPK sisipan pertama)
+- `0001/LPJ/SN/05/2026` (LPJ nomor utama)
+- `0001.2/LPJ/SN/05/2026` (LPJ sisipan kedua)
+
 ### Penjelasan Konfigurasi
 
 - `nama_kasek`: Nama lengkap Kepala Sekretariat yang akan muncul di dokumen cetak
 - `nip_kasek`: Nomor Induk Pegawai Kepala Sekretariat
-- `akhiran_surat_spk`: Format akhir nomor surat untuk SPK (contoh: `/SPKL/SN/` akan menghasilkan `0001.0/SPKL/SN/05/2026`)
-- `akhiran_surat_lpj`: Format akhir nomor surat untuk LPJ (contoh: `/LPJ/SN/` akan menghasilkan `0001.0/LPJ/SN/05/2026`)
+- `akhiran_surat_spk`: Format akhir nomor surat untuk SPK
+- `akhiran_surat_lpj`: Format akhir nomor surat untuk LPJ
 
 ### DEPRECATED Features
 
