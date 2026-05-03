@@ -12,6 +12,12 @@ class LemburService
     /**
      * Filter dan Paginate Data Lembur
      */
+    private NomorSuratService $nomorSuratService;
+
+    public function __construct(NomorSuratService $nomorSuratService)
+    {
+        $this->nomorSuratService = $nomorSuratService;
+    }
     public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
     {
         $user = \Illuminate\Support\Facades\Auth::user();
@@ -77,7 +83,7 @@ class LemburService
     public function create(array $data): Lembur
     {
         // Generate nomor surat berdasarkan logika sisipan
-        $nomor = $this->generateNomorSurat($data['tanggal_lembur']);
+        $nomor = $this->nomorSuratService->generate($data['tanggal_lembur']);
         $data['no_utama'] = $nomor['no_utama'];
         $data['no_sisipan'] = $nomor['no_sisipan'];
 
@@ -113,44 +119,7 @@ class LemburService
      * - Normal input (tidak ada surat lebih baru): no_utama++, no_sisipan = 0
      * - Sisipan input (ada surat lebih baru): no_utama = no induk, no_sisipan++
      */
-    public function generateNomorSurat(string $tanggalLembur): array
-    {
-        $tanggal = Carbon::parse($tanggalLembur)->startOfDay();
 
-        // Cek apakah ada data lembur di tanggal SETELAHNYA
-        $adaDataLebihBaru = Lembur::where('tanggal_lembur', '>', $tanggal)->exists();
-
-        if (!$adaDataLebihBaru) {
-            // INPUT NORMAL - ambil nomor utama terbesar + 1
-            $noUtamaTerbesar = Lembur::max('no_utama') ?? (config('system.nomor_surat_awal') - 1);
-            $noUtamaBaru = max($noUtamaTerbesar + 1, config('system.nomor_surat_awal'));
-            $noSisipanBaru = 0;
-        } else {
-            // INPUT SISIPAN - cari nomor induk dari surat terakhir sebelum tanggal ini
-            $nomorInduk = Lembur::where('tanggal_lembur', '<', $tanggal)
-                ->orderBy('tanggal_lembur', 'desc')
-                ->orderBy('no_utama', 'desc')
-                ->value('no_utama');
-
-            if ($nomorInduk === null) {
-                // Tidak ada surat sebelumnya, mulai dari nomor awal config
-                $noUtamaBaru = config('system.nomor_surat_awal');
-                $noSisipanBaru = 0;
-            } else {
-                // Cari sisipan terakhir dari nomor induk tersebut
-                $sisipanTerbesar = Lembur::where('no_utama', $nomorInduk)
-                    ->max('no_sisipan') ?? 0;
-
-                $noUtamaBaru = $nomorInduk;
-                $noSisipanBaru = $sisipanTerbesar + 1;
-            }
-        }
-
-        return [
-            'no_utama' => $noUtamaBaru,
-            'no_sisipan' => $noSisipanBaru,
-        ];
-    }
 
     /**
      * Format nomor surat lengkap dengan pattern:
@@ -161,17 +130,7 @@ class LemburService
      * - 0001/SPKL/SN/05/2026 (untuk no_sisipan = 0)
      * - 0001.1/LPJ/SN/05/2026 (untuk no_sisipan = 1)
      */
-    public function formatNomorSurat(Lembur $lembur, string $type = 'spk'): string
-    {
-        $t = Carbon::parse($lembur->tanggal_lembur);
-        $noUtama = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
-        $akhiran = $type === 'lpj' ? config('system.akhiran_surat_lpj') : config('system.akhiran_surat_spk');
 
-        // Jika no_sisipan adalah 0, tidak tampilkan .0
-        $nomor = $lembur->no_sisipan == 0 ? $noUtama : "{$noUtama}.{$lembur->no_sisipan}";
-
-        return $nomor . $akhiran . $t->format('m/Y');
-    }
 
     /**
      * Fitur Terbilang
@@ -199,7 +158,7 @@ class LemburService
         Carbon::setLocale('id');
         $t = Carbon::parse($lembur->tanggal_lembur);
 
-        $nomorSurat = $this->formatNomorSurat($lembur, $type);
+        $nomorSurat = $this->nomorSuratService->format($lembur, $type);
         $tp->setValue('no_surat', $nomorSurat);
         $tp->setValue('nama', $lembur->nama);
         $tp->setValue('nip', $lembur->nip);
@@ -244,5 +203,10 @@ class LemburService
             ['key' => 'hasil_kerja', 'label' => 'Hasil Kerja'],
             ['key' => 'jumlah_jam', 'label' => 'Jam'],
         ];
+    }
+
+    public function formatNomorSurat($lembur, $type = 'spk'): string
+    {
+        return $this->nomorSuratService->format($lembur, $type);
     }
 }
