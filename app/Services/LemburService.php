@@ -208,9 +208,9 @@ class LemburService
         $tp->setValue('nama_kasek', config('system.nama_kasek'));
         $tp->setValue('nip_kasek', config('system.nip_kasek'));
 
-        if ($lembur->dokumentasi && file_exists(storage_path('app/public/' . $lembur->dokumentasi))) {
+        if ($lembur->dokumentasi && file_exists(storage_path('app/private/dokumentasi/' . $lembur->dokumentasi))) {
             $tp->setImageValue('gambar', [
-                'path' => storage_path('app/public/' . $lembur->dokumentasi),
+                'path' => storage_path('app/private/dokumentasi/' . $lembur->dokumentasi),
                 'width' => 400,
                 'height' => 300,
                 'ratio' => true
