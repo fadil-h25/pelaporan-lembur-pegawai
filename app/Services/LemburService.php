@@ -82,12 +82,21 @@ class LemburService
      */
     public function create(array $data): Lembur
     {
-        // Generate nomor surat berdasarkan logika sisipan
-        $nomor = $this->nomorSuratService->generate($data['tanggal_lembur']);
-        $data['no_utama'] = $nomor['no_utama'];
-        $data['no_sisipan'] = $nomor['no_sisipan'];
+        $data['no_utama'] = null;
+        $data['no_sisipan'] = 0;
 
         return Lembur::create($data);
+    }
+
+    public function generateNomor(Lembur $lembur): void
+    {
+        if (is_null($lembur->no_utama)) {
+            $nomor = $this->nomorSuratService->generate($lembur->tanggal_lembur);
+            $lembur->update([
+                'no_utama' => $nomor['no_utama'],
+                'no_sisipan' => $nomor['no_sisipan']
+            ]);
+        }
     }
 
     /**

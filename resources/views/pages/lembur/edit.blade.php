@@ -87,6 +87,13 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         return redirect()->route('lembur.index');
     }
+
+    public function generateNomorSurat()
+    {
+        app(LemburService::class)->generateNomor($this->lembur);
+        $this->lembur->refresh();
+        $this->success('Nomor surat berhasil digenerate.');
+    }
 };
 ?>
 
@@ -96,8 +103,16 @@ new #[Layout('components.layouts.app')] class extends Component {
     <x-card>
         <x-form wire:submit="save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-input label="Nomor Surat"
-                    value="{{ app(\App\Services\LemburService::class)->formatNomorSurat($lembur) }}" readonly disabled />
+                @if(is_null($lembur->no_utama))
+                    <div class="flex items-end gap-2">
+                        <div class="flex-1">
+                            <x-input label="Nomor Surat" value="Belum ada nomor" readonly disabled />
+                        </div>
+                        <x-button label="Ambil Nomor" wire:click="generateNomorSurat" class="btn-primary" spinner />
+                    </div>
+                @else
+                    <x-input label="Nomor Surat" value="{{ app(\App\Services\LemburService::class)->formatNomorSurat($lembur) }}" readonly disabled />
+                @endif
                 <x-input label="Nama" value="{{ $lembur->nama }}" readonly />
                 <x-input label="NIP" value="{{ $lembur->nip }}" readonly />
                 <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required :readonly="!$isAdmin"

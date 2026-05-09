@@ -75,6 +75,10 @@ class NomorSuratService
      */
     public function format(Lembur $lembur, string $type = 'spk'): string
     {
+        if (is_null($lembur->no_utama)) {
+            return 'Belum ada nomor';
+        }
+
         $t = Carbon::parse($lembur->tanggal_lembur);
 
         // Format 4 digit (0001, 0002, dst)
