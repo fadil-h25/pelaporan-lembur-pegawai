@@ -18,7 +18,7 @@ class LemburService
     {
         $this->nomorSuratService = $nomorSuratService;
     }
-    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
+    private function getBaseQuery(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru')
     {
         $user = \Illuminate\Support\Facades\Auth::user();
         $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
@@ -46,8 +46,33 @@ class LemburService
             ->when($sort === 'terbaru', fn($q) => $q->orderBy('tanggal_lembur', 'desc'))
             ->when($sort === 'terlama', fn($q) => $q->orderBy('tanggal_lembur', 'asc'))
             ->when($sort === 'nomor_asc', fn($q) => $q->orderBy('id', 'asc'))
-            ->when($sort === 'nomor_desc', fn($q) => $q->orderBy('id', 'desc'))
-            ->paginate($perPage);
+            ->when($sort === 'nomor_desc', fn($q) => $q->orderBy('id', 'desc'));
+    }
+
+    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
+    {
+        return $this->getBaseQuery($search, $startDate, $endDate, $sort)->paginate($perPage);
+    }
+
+    public function exportExcel(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru')
+    {
+        $query = $this->getBaseQuery($search, $startDate, $endDate, $sort);
+
+        return (new \Rap2hpoutre\FastExcel\FastExcel($query->get()))->download('data_lembur.xlsx', function ($lembur) {
+            return [
+                'Nomor Surat (SPK)' => $this->nomorSuratService->format($lembur, 'spk'),
+                'Nomor Surat (LPJ)' => $this->nomorSuratService->format($lembur, 'lpj'),
+                'Nama' => $lembur->nama,
+                'NIP' => $lembur->nip,
+                'Jabatan' => $lembur->jabatan,
+                'Golongan' => $lembur->golongan,
+                'Tanggal Lembur' => Carbon::parse($lembur->tanggal_lembur)->translatedFormat('d F Y'),
+                'Jumlah Jam' => $lembur->jumlah_jam,
+                'Pembebanan Anggaran' => $lembur->pembebanan_anggaran,
+                'Rencana Kerja' => $lembur->rencana_kerja,
+                'Hasil Kerja' => $lembur->hasil_kerja,
+            ];
+        });
     }
 
     public function totalJamTahunIni(): int

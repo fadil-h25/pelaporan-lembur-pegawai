@@ -95,6 +95,11 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         return $this->service()->downloadCetak($type, $lembur);
     }
+
+    public function exportExcel()
+    {
+        return $this->service()->exportExcel($this->search, $this->startDate, $this->endDate, $this->sort);
+    }
 };
 ?>
 
@@ -134,7 +139,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-input type="date" wire:model.live="endDate" class="!bg-white" />
             </div>
 
-            <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
+            <div class="flex gap-2 items-center">
+                <x-button label="Export Excel" icon="o-arrow-down-tray" wire:click="exportExcel" class="btn-info text-white rounded-full" spinner />
+                <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
+            </div>
         </x-custom-table-header>
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">
 

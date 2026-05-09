@@ -16,6 +16,7 @@
         "livewire/livewire": "^4.2",
         "livewire/volt": "^1.10",
         "phpoffice/phpword": "^1.4",
+        "rap2hpoutre/fast-excel": "^5.7",
         "robsontenorio/mary": "^2.8"
     },
     "require-dev": {
