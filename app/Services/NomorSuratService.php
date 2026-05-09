@@ -18,26 +18,26 @@ class NomorSuratService
         $tanggal = Carbon::parse($tanggalLembur)->startOfDay();
         $tanggalTerbesar = Lembur::max('tanggal_lembur');
 
-        // 1. LOGIKA TANGGAL BARU (Urutan Normal)
-        if (!$tanggalTerbesar || $tanggal > Carbon::parse($tanggalTerbesar)) {
-            $noUtamaTerbesar = Lembur::max('no_utama') ?? (config('app_settings.surat.nomor_awal', 1) - 1);
-            return [
-                'no_utama' => $noUtamaTerbesar + 1,
-                'no_sisipan' => 0,
-            ];
+        // Jika tanggal "nyelip" (lebih kecil dari tanggal terbaru di DB)
+        if ($tanggalTerbesar && $tanggal < Carbon::parse($tanggalTerbesar)) {
+            return $this->generateNomorSisipan($tanggal);
         }
 
-        // 2. LOGIKA TANGGAL SISIPAN (Data Telat Masuk)
-        // Cari data terdekat yang tanggalnya <= tanggal input untuk jadi "induk"
+        // Jika tanggal baru atau lebih besar (logika normal/isi lubang)
+        return $this->generateNomorUtamaBaru();
+    }
+
+    /**
+     * Logika khusus untuk mencari nomor induk dan membuat sisipan (.1, .2, dst)
+     */
+    private function generateNomorSisipan(Carbon $tanggal): array
+    {
         $induk = Lembur::whereDate('tanggal_lembur', '<=', $tanggal)
             ->orderBy('tanggal_lembur', 'desc')
             ->orderBy('no_utama', 'desc')
             ->first();
 
-        // Jika tidak ada induk sama sekali (kasus ekstrim), pakai nomor awal
         $noUtama = $induk ? $induk->no_utama : config('app_settings.surat.nomor_awal', 1);
-
-        // Cari sisipan terbesar di nomor induk tersebut agar tidak duplikat
         $sisipanTerbesar = Lembur::where('no_utama', $noUtama)->max('no_sisipan') ?? 0;
 
         return [
@@ -46,6 +46,29 @@ class NomorSuratService
         ];
     }
 
+    /**
+     * Logika untuk mencari nomor utama yang tersedia.
+     * Sudah termasuk fitur "Tambal Lubang" jika ada nomor yang kosong di tengah.
+     */
+    private function generateNomorUtamaBaru(): array
+    {
+        // Ambil semua no_utama yang sudah ada
+        $existingNumbers = Lembur::where('no_sisipan', 0)
+            ->pluck('no_utama')
+            ->toArray();
+
+        $nomorTujuan = config('app_settings.surat.nomor_awal', 1);
+
+        // Cari angka terkecil yang belum terpakai (mengisi gap/lubang)
+        while (in_array($nomorTujuan, $existingNumbers)) {
+            $nomorTujuan++;
+        }
+
+        return [
+            'no_utama' => $nomorTujuan,
+            'no_sisipan' => 0,
+        ];
+    }
     /**
      * Format nomor surat lengkap untuk Order (SP) dan SPJ.
      * Contoh: 0001/SP/SPKL/SN/05/2026 atau 0001.1/SPJ/SPKL/SN/05/2026
