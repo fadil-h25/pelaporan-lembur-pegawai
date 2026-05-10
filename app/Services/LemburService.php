@@ -117,6 +117,19 @@ class LemburService
             ->count();
     }
 
+    public function totalDenganNomor(): int
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
+
+        return (int) Lembur::query()
+            ->when(!in_array($roleValue, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->whereNotNull('no_utama')
+            ->count();
+    }
+
     /**
      * Simpan Data Lembur Baru (Create) - Auto generate nomor surat
      */

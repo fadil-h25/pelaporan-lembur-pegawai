@@ -85,6 +85,11 @@ new #[Layout('components.layouts.app')] class extends Component {
         return $this->service()->totalTanpaNomor();
     }
 
+    public function totalDenganNomor()
+    {
+        return $this->service()->totalDenganNomor();
+    }
+
     public function totalJamTahunIni()
     {
         return $this->service()->totalJamTahunIni();
@@ -129,11 +134,8 @@ new #[Layout('components.layouts.app')] class extends Component {
 <div>
     <x-custom-header title="Dokumen Lembur" subtitle="Daftar pengajuan dokumen lembur pegawai" />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-6">
-        <x-custom-stat title="Lembur Ditemukan" :value="$this->lemburs()->total()" desc="Hasil pencarian & filter"
-            icon="o-document-magnifying-glass" />
-        <x-custom-stat title="Belum Ada Nomor" :value="$this->totalTanpaNomor()" desc="Dokumen tanpa nomor surat"
-            icon="o-document-minus" />
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
+        <x-custom-stat title="Surat Bernomor / Tidak Bernomor" :value="$this->totalDenganNomor() . ' / ' . $this->totalTanpaNomor()" desc="Dokumen lembur" icon="o-document-text" />
         <x-custom-stat title="Jam Lembur (Bulan Ini)" :value="$this->totalJamBulanIni() . ' Jam'" desc="Total jam bulan berjalan"
             icon="o-clock" />
         <x-custom-stat title="Jam Lembur (Tahun Ini)" :value="$this->totalJamTahunIni() . ' Jam'" desc="Total jam tahun berjalan"
