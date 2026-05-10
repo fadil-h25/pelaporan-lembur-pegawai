@@ -2,9 +2,90 @@
 
 use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Validate;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Mary\Traits\Toast;
 
 new #[Layout('components.layouts.app')] class extends Component {
-    // Profil hanya menampilkan data user saat ini
+    use Toast;
+
+    public bool $isEditing = false;
+
+    #[Validate('required|string|max:255')]
+    public string $name = '';
+
+    public string $email = '';
+
+    #[Validate('nullable|string|max:255')]
+    public ?string $nip = null;
+
+    #[Validate('nullable|string|max:255')]
+    public ?string $jabatan = null;
+
+    #[Validate('nullable|string|max:255')]
+    public ?string $golongan = null;
+
+    public ?string $password = null;
+    public ?string $password_confirmation = null;
+
+    public function mount()
+    {
+        $user = auth()->user();
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->nip = $user->nip;
+        $this->jabatan = $user->jabatan;
+        $this->golongan = $user->golongan;
+    }
+
+    public function rules()
+    {
+        return [
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore(auth()->user()->id)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ];
+    }
+
+    public function toggleEdit()
+    {
+        $this->isEditing = !$this->isEditing;
+        if (!$this->isEditing) {
+            // Reset to original values if cancelled
+            $this->mount();
+            $this->password = null;
+            $this->password_confirmation = null;
+            $this->resetValidation();
+        }
+    }
+
+    public function save()
+    {
+        $this->validate();
+
+        $user = auth()->user();
+        
+        $data = [
+            'name' => $this->name,
+            'email' => $this->email,
+            'nip' => $this->nip,
+            'jabatan' => $this->jabatan,
+            'golongan' => $this->golongan,
+        ];
+
+        if ($this->password) {
+            $data['password'] = Hash::make($this->password);
+        }
+
+        $user->update($data);
+
+        $this->isEditing = false;
+        $this->password = null;
+        $this->password_confirmation = null;
+
+        $this->success('Profil berhasil diperbarui.');
+    }
 };
 ?>
 
@@ -14,10 +95,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {{-- Kolom Kiri: Avatar & Info Singkat --}}
         <div class="md:col-span-1">
-            {{-- Hapus flex-col di card, gunakan div pembungkus di dalam slot --}}
             <x-card shadow>
                 <div class="flex flex-col items-center text-center py-4">
-                    {{-- Tambahkan flex justify-center pada container avatar jika perlu --}}
                     <div class="flex justify-center w-full">
                         <x-avatar :placeholder="collect(explode(' ', auth()->user()->name))
                             ->map(fn($n) => $n[0])
@@ -37,21 +116,38 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         {{-- Kolom Kanan: Detail Informasi --}}
         <div class="md:col-span-2">
-            <x-card title="Detail Informasi" separator>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Nama Lengkap" value="{{ auth()->user()->name }}" readonly />
-                    <x-input label="Email" value="{{ auth()->user()->email }}" readonly />
-                    <x-input label="NIP" value="{{ auth()->user()->nip ?? '-' }}" readonly />
-                    <x-input label="Jabatan" value="{{ auth()->user()->jabatan ?? '-' }}" readonly />
-                    <x-input label="Golongan" value="{{ auth()->user()->golongan ?? '-' }}" readonly />
-                    <x-input label="Role Akses" value="{{ ucfirst(auth()->user()->role->value) }}" readonly />
-                </div>
+            <x-form wire:submit="save">
+                <x-card title="Detail Informasi" separator>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-input label="Nama Lengkap" wire:model="name" :readonly="!$isEditing" />
+                        <x-input label="Email" wire:model="email" :readonly="!$isEditing" />
+                        <x-input label="NIP" wire:model="nip" :readonly="!$isEditing" />
+                        <x-input label="Jabatan" wire:model="jabatan" :readonly="!$isEditing" />
+                        <x-input label="Golongan" wire:model="golongan" :readonly="!$isEditing" />
+                        <x-input label="Role Akses" value="{{ ucfirst(auth()->user()->role->value) }}" readonly />
+                    </div>
 
-                <x-slot:actions>
-                    {{-- Opsional: Tambahkan tombol edit profil di sini jika diperlukan di masa depan --}}
-                    <x-button label="Kembali" link="/dashboard" icon="o-arrow-left" class="btn-ghost" />
-                </x-slot:actions>
-            </x-card>
+                    @if($isEditing)
+                        <div class="mt-4 border-t border-base-200 pt-4">
+                            <h3 class="font-semibold text-lg mb-4">Ubah Password (Opsional)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <x-input type="password" label="Password Baru" wire:model="password" />
+                                <x-input type="password" label="Konfirmasi Password" wire:model="password_confirmation" />
+                            </div>
+                        </div>
+                    @endif
+
+                    <x-slot:actions>
+                        @if($isEditing)
+                            <x-button label="Batal" wire:click="toggleEdit" icon="o-x-mark" class="btn-ghost" />
+                            <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+                        @else
+                            <x-button label="Kembali" link="/dashboard" icon="o-arrow-left" class="btn-ghost" />
+                            <x-button type="button" label="Edit Profil" wire:click="toggleEdit" icon="o-pencil" class="btn-primary" />
+                        @endif
+                    </x-slot:actions>
+                </x-card>
+            </x-form>
         </div>
     </div>
 </div>
