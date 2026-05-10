@@ -22,6 +22,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Url]
     public string $sort = 'terbaru';
 
+    #[Url]
+    public string $hasNomor = '';
+
     public int $perPage = 5;
 
     use WithPagination;
@@ -47,6 +50,11 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->resetPage();
     }
 
+    public function updatedHasNomor()
+    {
+        $this->resetPage();
+    }
+
     public function updatedPerPage()
     {
         $this->resetPage();
@@ -59,7 +67,12 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function lemburs()
     {
-        return $this->service()->filter($this->search, $this->perPage, $this->startDate, $this->endDate, $this->sort);
+        return $this->service()->filter($this->search, $this->perPage, $this->startDate, $this->endDate, $this->sort, $this->hasNomor);
+    }
+
+    public function totalTanpaNomor()
+    {
+        return $this->service()->totalTanpaNomor();
     }
 
     public function totalJamTahunIni()
@@ -98,7 +111,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function exportExcel()
     {
-        return $this->service()->exportExcel($this->search, $this->startDate, $this->endDate, $this->sort);
+        return $this->service()->exportExcel($this->search, $this->startDate, $this->endDate, $this->sort, $this->hasNomor);
     }
 };
 ?>
@@ -106,44 +119,50 @@ new #[Layout('components.layouts.app')] class extends Component {
 <div>
     <x-custom-header title="Dokumen Lembur" subtitle="Daftar pengajuan dokumen lembur pegawai" />
 
-    <div class="flex flex-wrap gap-4 w-full mb-6">
-        <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Lembur Ditemukan" :value="$this->lemburs()->total()" desc="Hasil pencarian & filter"
-                icon="o-document-magnifying-glass" />
-        </div>
-        <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Jam Lembur (Bulan Ini)" :value="$this->totalJamBulanIni() . ' Jam'" desc="Total jam bulan berjalan"
-                icon="o-clock" />
-        </div>
-        <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Jam Lembur (Tahun Ini)" :value="$this->totalJamTahunIni() . ' Jam'" desc="Total jam tahun berjalan"
-                icon="o-calendar" />
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-6">
+        <x-custom-stat title="Lembur Ditemukan" :value="$this->lemburs()->total()" desc="Hasil pencarian & filter"
+            icon="o-document-magnifying-glass" />
+        <x-custom-stat title="Belum Ada Nomor" :value="$this->totalTanpaNomor()" desc="Dokumen tanpa nomor surat"
+            icon="o-document-minus" />
+        <x-custom-stat title="Jam Lembur (Bulan Ini)" :value="$this->totalJamBulanIni() . ' Jam'" desc="Total jam bulan berjalan"
+            icon="o-clock" />
+        <x-custom-stat title="Jam Lembur (Tahun Ini)" :value="$this->totalJamTahunIni() . ' Jam'" desc="Total jam tahun berjalan"
+            icon="o-calendar" />
     </div>
 
     <x-card>
         <x-custom-table-header title="Data Dokumen Lembur"
             subtitle="Total dokumen lembur ditemukan: {{ $this->lemburs()->total() }}">
-            {{-- <x-input wire:model.live.debounce.300ms="search" placeholder="Cari data..." icon="o-magnifying-glass" class="rounded-full !bg-white" clearable /> --}}
-
-            <div class="flex gap-2 items-center">
-                <x-select wire:model.live="sort" :options="[
-                    ['id' => 'terbaru', 'name' => 'Tanggal Terbaru'],
-                    ['id' => 'terlama', 'name' => 'Tanggal Terlama'],
-                    ['id' => 'nomor_asc', 'name' => 'Nomor Kecil ke Besar'],
-                    ['id' => 'nomor_desc', 'name' => 'Nomor Besar ke Kecil'],
-                ]" class="!bg-white min-w-[200px]" />
-
-                <x-input type="date" wire:model.live="startDate" class="!bg-white" />
-                <span class="text-gray-500 font-bold">-</span>
-                <x-input type="date" wire:model.live="endDate" class="!bg-white" />
-            </div>
-
             <div class="flex gap-2 items-center">
                 <x-button label="Export Excel" icon="o-arrow-down-tray" wire:click="exportExcel" class="btn-info text-white rounded-full" spinner />
                 <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
             </div>
         </x-custom-table-header>
+
+        {{-- Filter Row --}}
+        <div class="bg-base-200/50 p-4 rounded-xl mb-4 flex flex-wrap gap-4 items-center">
+            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari nama, nip..." icon="o-magnifying-glass" class="!bg-white min-w-[200px] flex-1 md:flex-none" clearable />
+
+            <x-select wire:model.live="sort" :options="[
+                ['id' => 'terbaru', 'name' => 'Tanggal Terbaru'],
+                ['id' => 'terlama', 'name' => 'Tanggal Terlama'],
+                ['id' => 'nomor_asc', 'name' => 'Nomor Kecil ke Besar'],
+                ['id' => 'nomor_desc', 'name' => 'Nomor Besar ke Kecil'],
+            ]" class="!bg-white min-w-[200px] flex-1 md:flex-none" />
+
+            <x-select wire:model.live="hasNomor" :options="[
+                ['id' => '', 'name' => 'Semua Status Nomor'],
+                ['id' => 'yes', 'name' => 'Sudah Ada Nomor'],
+                ['id' => 'no', 'name' => 'Belum Ada Nomor'],
+            ]" class="!bg-white min-w-[200px] flex-1 md:flex-none" />
+
+            <div class="flex gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
+                <x-input type="date" wire:model.live="startDate" class="!bg-white" />
+                <span class="text-gray-500 font-bold">-</span>
+                <x-input type="date" wire:model.live="endDate" class="!bg-white" />
+            </div>
+        </div>
+
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">
 
             {{-- Custom Kolom Nomor --}}

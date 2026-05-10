@@ -18,7 +18,7 @@ class LemburService
     {
         $this->nomorSuratService = $nomorSuratService;
     }
-    private function getBaseQuery(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru')
+    private function getBaseQuery(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru', string $hasNomor = '')
     {
         $user = \Illuminate\Support\Facades\Auth::user();
         $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
@@ -46,17 +46,19 @@ class LemburService
             ->when($sort === 'terbaru', fn($q) => $q->orderBy('tanggal_lembur', 'desc'))
             ->when($sort === 'terlama', fn($q) => $q->orderBy('tanggal_lembur', 'asc'))
             ->when($sort === 'nomor_asc', fn($q) => $q->orderBy('id', 'asc'))
-            ->when($sort === 'nomor_desc', fn($q) => $q->orderBy('id', 'desc'));
+            ->when($sort === 'nomor_desc', fn($q) => $q->orderBy('id', 'desc'))
+            ->when($hasNomor === 'yes', fn($q) => $q->whereNotNull('no_utama'))
+            ->when($hasNomor === 'no', fn($q) => $q->whereNull('no_utama'));
     }
 
-    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru'): LengthAwarePaginator
+    public function filter(string $search = '', int $perPage = 5, string $startDate = '', string $endDate = '', string $sort = 'terbaru', string $hasNomor = ''): LengthAwarePaginator
     {
-        return $this->getBaseQuery($search, $startDate, $endDate, $sort)->paginate($perPage);
+        return $this->getBaseQuery($search, $startDate, $endDate, $sort, $hasNomor)->paginate($perPage);
     }
 
-    public function exportExcel(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru')
+    public function exportExcel(string $search = '', string $startDate = '', string $endDate = '', string $sort = 'terbaru', string $hasNomor = '')
     {
-        $query = $this->getBaseQuery($search, $startDate, $endDate, $sort);
+        $query = $this->getBaseQuery($search, $startDate, $endDate, $sort, $hasNomor);
 
         return (new \Rap2hpoutre\FastExcel\FastExcel($query->get()))->download('data_lembur.xlsx', function ($lembur) {
             return [
@@ -100,6 +102,19 @@ class LemburService
             ->whereYear('tanggal_lembur', Carbon::now()->year)
             ->whereMonth('tanggal_lembur', Carbon::now()->month)
             ->sum('jumlah_jam');
+    }
+
+    public function totalTanpaNomor(): int
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $roleValue = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
+
+        return (int) Lembur::query()
+            ->when(!in_array($roleValue, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]), function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->whereNull('no_utama')
+            ->count();
     }
 
     /**
