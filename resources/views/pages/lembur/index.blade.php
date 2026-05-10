@@ -62,6 +62,14 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->resetPage();
     }
 
+    public function hasActiveFilters(): bool
+    {
+        return $this->sort !== 'terbaru' || 
+               $this->hasNomor !== '' || 
+               $this->startDate !== '' || 
+               $this->endDate !== '';
+    }
+
     protected function service(): LemburService
     {
         return app(LemburService::class);
@@ -138,7 +146,15 @@ new #[Layout('components.layouts.app')] class extends Component {
             <div class="flex flex-wrap gap-2 items-center">
                 <x-input wire:model.live.debounce.300ms="search" placeholder="Cari nama, nip..." icon="o-magnifying-glass" class="!bg-white rounded-full min-w-[200px]" clearable />
                 
-                <x-button icon="o-funnel" label="Filter" @click="$wire.filterModal = true" class="btn-outline bg-white rounded-full" />
+                <div class="relative">
+                    <x-button icon="o-funnel" label="Filter" @click="$wire.filterModal = true" class="rounded-full {{ $this->hasActiveFilters() ? 'btn-primary text-white' : 'btn-outline bg-white' }}" />
+                    @if($this->hasActiveFilters())
+                        <span class="absolute top-0 right-0 flex h-3 w-3 -mt-1 -mr-1">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+                        </span>
+                    @endif
+                </div>
                 <x-button label="Export Excel" icon="o-arrow-down-tray" wire:click="exportExcel" class="btn-info text-white rounded-full" spinner />
                 <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
             </div>
