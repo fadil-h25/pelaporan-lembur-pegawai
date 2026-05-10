@@ -25,6 +25,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Url]
     public string $hasNomor = '';
 
+    public bool $filterModal = false;
+
     public int $perPage = 5;
 
     use WithPagination;
@@ -133,35 +135,41 @@ new #[Layout('components.layouts.app')] class extends Component {
     <x-card>
         <x-custom-table-header title="Data Dokumen Lembur"
             subtitle="Total dokumen lembur ditemukan: {{ $this->lemburs()->total() }}">
-            <div class="flex gap-2 items-center">
+            <div class="flex flex-wrap gap-2 items-center">
+                <x-input wire:model.live.debounce.300ms="search" placeholder="Cari nama, nip..." icon="o-magnifying-glass" class="!bg-white rounded-full min-w-[200px]" clearable />
+                
+                <x-button icon="o-funnel" label="Filter" @click="$wire.filterModal = true" class="btn-outline bg-white rounded-full" />
                 <x-button label="Export Excel" icon="o-arrow-down-tray" wire:click="exportExcel" class="btn-info text-white rounded-full" spinner />
                 <x-button link="/lembur/create" icon="o-plus" class="btn-success text-white rounded-full" />
             </div>
         </x-custom-table-header>
 
-        {{-- Filter Row --}}
-        <div class="bg-base-200/50 p-4 rounded-xl mb-4 flex flex-wrap gap-4 items-center">
-            <x-input wire:model.live.debounce.300ms="search" placeholder="Cari nama, nip..." icon="o-magnifying-glass" class="!bg-white min-w-[200px] flex-1 md:flex-none" clearable />
+        <x-modal wire:model="filterModal" title="Filter Data" subtitle="Sesuaikan pencarian dokumen" separator>
+            <div class="grid grid-cols-1 gap-4">
+                <x-select label="Urutkan" wire:model.live="sort" :options="[
+                    ['id' => 'terbaru', 'name' => 'Tanggal Terbaru'],
+                    ['id' => 'terlama', 'name' => 'Tanggal Terlama'],
+                    ['id' => 'nomor_asc', 'name' => 'Nomor Kecil ke Besar'],
+                    ['id' => 'nomor_desc', 'name' => 'Nomor Besar ke Kecil'],
+                ]" class="!bg-white" />
 
-            <x-select wire:model.live="sort" :options="[
-                ['id' => 'terbaru', 'name' => 'Tanggal Terbaru'],
-                ['id' => 'terlama', 'name' => 'Tanggal Terlama'],
-                ['id' => 'nomor_asc', 'name' => 'Nomor Kecil ke Besar'],
-                ['id' => 'nomor_desc', 'name' => 'Nomor Besar ke Kecil'],
-            ]" class="!bg-white min-w-[200px] flex-1 md:flex-none" />
+                <x-select label="Status Nomor Surat" wire:model.live="hasNomor" :options="[
+                    ['id' => '', 'name' => 'Semua Status Nomor'],
+                    ['id' => 'yes', 'name' => 'Sudah Ada Nomor'],
+                    ['id' => 'no', 'name' => 'Belum Ada Nomor'],
+                ]" class="!bg-white" />
 
-            <x-select wire:model.live="hasNomor" :options="[
-                ['id' => '', 'name' => 'Semua Status Nomor'],
-                ['id' => 'yes', 'name' => 'Sudah Ada Nomor'],
-                ['id' => 'no', 'name' => 'Belum Ada Nomor'],
-            ]" class="!bg-white min-w-[200px] flex-1 md:flex-none" />
-
-            <div class="flex gap-2 items-center w-full md:w-auto mt-2 md:mt-0">
-                <x-input type="date" wire:model.live="startDate" class="!bg-white" />
-                <span class="text-gray-500 font-bold">-</span>
-                <x-input type="date" wire:model.live="endDate" class="!bg-white" />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Tanggal Mulai" type="date" wire:model.live="startDate" class="!bg-white" />
+                    <x-input label="Tanggal Selesai" type="date" wire:model.live="endDate" class="!bg-white" />
+                </div>
             </div>
-        </div>
+
+            <x-slot:actions>
+                <x-button label="Reset" wire:click="$set('sort', 'terbaru'); $set('hasNomor', ''); $set('startDate', ''); $set('endDate', '');" class="btn-ghost" />
+                <x-button label="Tutup" @click="$wire.filterModal = false" class="btn-primary" />
+            </x-slot:actions>
+        </x-modal>
 
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">
 
