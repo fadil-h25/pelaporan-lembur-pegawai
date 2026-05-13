@@ -14,6 +14,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public Lembur $lembur;
     public bool $isAdmin = false;
+    public bool $confirmNomorModal = false;
 
     #[Validate('required|date')]
     public $tanggal_lembur;
@@ -92,6 +93,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         app(LemburService::class)->generateNomor($this->lembur);
         $this->lembur->refresh();
+        $this->confirmNomorModal = false;
         $this->success('Nomor surat berhasil digenerate.');
     }
 };
@@ -108,7 +110,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <div class="flex-1">
                             <x-input label="Nomor Surat" value="Belum ada nomor" readonly disabled />
                         </div>
-                        <x-button label="Ambil Nomor" wire:click="generateNomorSurat" class="btn-primary" spinner />
+                        <x-button label="Ambil Nomor" @click="$wire.confirmNomorModal = true" class="btn-primary" type="button" />
                     </div>
                 @else
                     <x-input label="Nomor Surat" value="{{ app(\App\Services\LemburService::class)->formatNomorSurat($lembur) }}" readonly disabled />
@@ -149,4 +151,40 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-slot:actions>
         </x-form>
     </x-card>
+
+    <x-modal wire:model="confirmNomorModal" title="Peringatan Penting!" separator>
+        <div x-data="{ timer: 3, interval: null }"
+             x-init="
+                $watch('$wire.confirmNomorModal', value => {
+                    if(value) {
+                        timer = 3;
+                        if(interval) clearInterval(interval);
+                        interval = setInterval(() => {
+                            if(timer > 0) timer--;
+                            else clearInterval(interval);
+                        }, 1000);
+                    } else {
+                        if(interval) clearInterval(interval);
+                    }
+                })
+             ">
+            <div class="py-4 text-base">
+                <p>Pastikan surat sudah <b>ditandatangani oleh pimpinan</b>.</p>
+                <p class="text-error font-bold mt-2">Surat yang sudah terbit nomornya tidak bisa diedit kembali.</p>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <x-button label="Batal" @click="$wire.confirmNomorModal = false" class="btn-ghost" />
+                <button 
+                    type="button"
+                    wire:click="generateNomorSurat" 
+                    class="btn btn-primary" 
+                    x-bind:disabled="timer > 0"
+                >
+                    <span x-show="timer > 0" x-text="`Tunggu (${timer} detik)...`"></span>
+                    <span x-show="timer === 0">Saya Mengerti, Generate Nomor</span>
+                </button>
+            </div>
+        </div>
+    </x-modal>
 </div>
