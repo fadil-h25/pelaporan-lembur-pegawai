@@ -5,6 +5,7 @@ use Livewire\Attributes\Layout;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Validate;
 use App\Models\User;
+use App\Bagian;
 use Illuminate\Support\Facades\Hash;
 use Mary\Traits\Toast;
 
@@ -27,6 +28,9 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('nullable|string|max:255')]
     public ?string $golongan = null;
 
+    #[Validate('nullable|string|max:50')]
+    public ?string $bagian = null;
+
     public ?string $password = null;
     public ?string $password_confirmation = null;
 
@@ -38,6 +42,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->nip = $user->nip;
         $this->jabatan = $user->jabatan;
         $this->golongan = $user->golongan;
+        $this->bagian = $user->bagian?->value;
     }
 
     public function rules()
@@ -72,6 +77,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'nip' => $this->nip,
             'jabatan' => $this->jabatan,
             'golongan' => $this->golongan,
+            'bagian' => $this->bagian,
         ];
 
         if ($this->password) {
@@ -124,6 +130,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <x-input label="NIP" wire:model="nip" :readonly="!$isEditing" />
                         <x-input label="Jabatan" wire:model="jabatan" :readonly="!$isEditing" />
                         <x-input label="Golongan" wire:model="golongan" :readonly="!$isEditing" />
+                        <x-select label="Bagian" wire:model="bagian" :options="collect(App\Bagian::cases())->map(fn($b) => ['id' => $b->value, 'name' => $b->label()])" option-value="id" option-label="name" :disabled="!$isEditing" placeholder="Pilih Bagian..." />
                         <x-input label="Role Akses" value="{{ ucfirst(auth()->user()->role->value) }}" readonly />
                     </div>
 
