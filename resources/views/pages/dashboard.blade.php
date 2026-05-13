@@ -9,11 +9,8 @@
     <div class="pt-2 space-y-6">
         @if(auth()->user()->role->value === \App\UserRole::ADMIN->value || auth()->user()->role->value === \App\UserRole::OPERATOR->value)
             <livewire:dashboard.admin-stats />
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <livewire:dashboard.admin-charts />
-                <livewire:dashboard.recent-lemburs />
-            </div>
+            <livewire:dashboard.admin-charts />
+            <livewire:dashboard.recent-lemburs />
         @else
             <x-card title="Dashboard Pegawai" shadow>
                 <p>Selamat bekerja! Ringkasan lembur Anda akan tampil di sini.</p>
