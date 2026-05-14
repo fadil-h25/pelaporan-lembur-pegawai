@@ -12,10 +12,8 @@
             <livewire:dashboard.admin-charts />
             <livewire:dashboard.recent-lemburs />
         @else
-            <x-card title="Dashboard Pegawai" shadow>
-                <p>Selamat bekerja! Ringkasan lembur Anda akan tampil di sini.</p>
-                <!-- Ruang untuk komponen pegawai di tahap selanjutnya -->
-            </x-card>
+            <livewire:dashboard.pegawai-stats />
+            <livewire:dashboard.pegawai-recent-lemburs />
         @endif
     </div>
 </x-layouts.app>
