@@ -26,6 +26,18 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('nullable|image|max:2048')]
     public $dokumentasi;
 
+    public $selected_user_id = null;
+
+    public function with(): array
+    {
+        $isAdminOrOperator = in_array(Auth::user()->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]);
+        
+        return [
+            'isAdminOrOperator' => $isAdminOrOperator,
+            'pegawaiList' => $isAdminOrOperator ? \App\Models\User::where('role', \App\UserRole::PEGAWAI->value)->get() : [],
+        ];
+    }
+
     public function save()
     {
         $validated = $this->validate();
@@ -37,7 +49,16 @@ new #[Layout('components.layouts.app')] class extends Component {
             return;
         }
 
-        $user = Auth::user();
+        $isAdminOrOperator = in_array(Auth::user()->role->value, [\App\UserRole::ADMIN->value, \App\UserRole::OPERATOR->value]);
+
+        if ($isAdminOrOperator) {
+            $this->validate(['selected_user_id' => 'required|exists:users,id'], [
+                'selected_user_id.required' => 'Anda harus memilih pegawai terlebih dahulu.'
+            ]);
+            $targetUser = \App\Models\User::find($this->selected_user_id);
+        } else {
+            $targetUser = Auth::user();
+        }
 
         if ($this->dokumentasi) {
             $path = $this->dokumentasi->store('dokumentasi', 'local');
@@ -46,11 +67,11 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         // Add user info and default status
         $data = array_merge($validated, [
-            'user_id' => $user->id,
-            'nama' => $user->name,
-            'nip' => $user->nip,
-            'golongan' => $user->golongan ?? null,
-            'jabatan' => $user->jabatan ?? null,
+            'user_id' => $targetUser->id,
+            'nama' => $targetUser->name,
+            'nip' => $targetUser->nip,
+            'golongan' => $targetUser->golongan ?? null,
+            'jabatan' => $targetUser->jabatan ?? null,
             'status' => 'Menunggu',
         ]);
 
@@ -67,8 +88,13 @@ new #[Layout('components.layouts.app')] class extends Component {
     <x-card>
         <x-form wire:submit="save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-input label="Nama" value="{{ Auth::user()->name }}" readonly />
-                <x-input label="NIP" value="{{ Auth::user()->nip }}" readonly />
+                @if($isAdminOrOperator)
+                    <x-select label="Pilih Pegawai" wire:model="selected_user_id" :options="$pegawaiList" option-value="id" option-label="name" placeholder="-- Pilih Pegawai --" required />
+                    <x-input label="NIP" value="Akan terisi otomatis sesuai pegawai" readonly disabled />
+                @else
+                    <x-input label="Nama" value="{{ Auth::user()->name }}" readonly />
+                    <x-input label="NIP" value="{{ Auth::user()->nip }}" readonly />
+                @endif
                 <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required />
                 <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" placeholder="Contoh: 2" required />
                 <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required />
