@@ -16,6 +16,9 @@ new class extends Component {
 
         // 1. Data Top 5 Pegawai (Bar Chart)
         $topUsers = Lembur::with('user')
+            ->whereHas('user', function ($query) {
+                $query->where('role', \App\UserRole::PEGAWAI->value);
+            })
             ->selectRaw('user_id, sum(jumlah_jam) as total_jam')
             ->whereMonth('tanggal_lembur', $currentMonth)
             ->whereYear('tanggal_lembur', $currentYear)
@@ -49,6 +52,9 @@ new class extends Component {
 
         // 2. Data per Bagian (Pie Chart)
         $lemburs = Lembur::with('user')
+            ->whereHas('user', function ($query) {
+                $query->where('role', \App\UserRole::PEGAWAI->value);
+            })
             ->whereMonth('tanggal_lembur', $currentMonth)
             ->whereYear('tanggal_lembur', $currentYear)
             ->get();
