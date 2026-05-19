@@ -87,12 +87,9 @@ class NomorSuratService
         // Tambahkan titik jika ada sisipan (contoh: 0001.1)
         $sisipan = $lembur->no_sisipan > 0 ? "." . $lembur->no_sisipan : "";
 
-        // Pembeda kode antara Surat Perintah dan Surat Pertanggungjawaban
-        $kode = $type === 'lpj' ? '/SPJ' : '/SP';
+        // Akhiran dari file config berdasarkan tipe surat (spk / lpj)
+        $akhiran = config("system.akhiran_surat_{$type}", '/SPKL/SN/');
 
-        // Akhiran dari file config
-        $akhiran = config('app_settings.surat.akhiran');
-
-        return $noPad . $sisipan . $kode . $akhiran . $t->format('m/Y');
+        return $noPad . $sisipan . $akhiran . $t->format('m/Y');
     }
 }
