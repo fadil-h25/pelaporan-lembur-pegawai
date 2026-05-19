@@ -27,6 +27,17 @@ new #[Layout('components.layouts.app')] class extends Component {
     public $dokumentasi;
 
     public $selected_user_id = null;
+    public $selected_nip = '';
+
+    public function updatedSelectedUserId($value)
+    {
+        if ($value) {
+            $user = \App\Models\User::find($value);
+            $this->selected_nip = $user ? $user->nip : '';
+        } else {
+            $this->selected_nip = '';
+        }
+    }
 
     public function with(): array
     {
@@ -89,8 +100,8 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-form wire:submit="save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @if($isAdminOrOperator)
-                    <x-select label="Pilih Pegawai" wire:model="selected_user_id" :options="$pegawaiList" option-value="id" option-label="name" placeholder="-- Pilih Pegawai --" required />
-                    <x-input label="NIP" value="Akan terisi otomatis sesuai pegawai" readonly disabled />
+                    <x-select label="Pilih Pegawai" wire:model.live="selected_user_id" :options="$pegawaiList" option-value="id" option-label="name" placeholder="-- Pilih Pegawai --" required />
+                    <x-input label="NIP" wire:model="selected_nip" placeholder="Pilih pegawai untuk melihat NIP" readonly disabled />
                 @else
                     <x-input label="Nama" value="{{ Auth::user()->name }}" readonly />
                     <x-input label="NIP" value="{{ Auth::user()->nip }}" readonly />
