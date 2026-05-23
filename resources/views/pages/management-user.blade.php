@@ -103,11 +103,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'nip' => [
-                'nullable',
-                'string',
-                \Illuminate\Validation\Rule::unique('users')->where(fn ($query) => $query->where('name', $this->name))
-            ],
+            'nip' => 'nullable|string|unique:users,nip',
             'golongan' => 'nullable|string',
             'jabatan' => 'nullable|string',
             'bagian' => 'nullable|string',
