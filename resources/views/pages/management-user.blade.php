@@ -5,6 +5,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use App\Services\UserService;
+use Mary\Traits\Toast;
 
 new #[Layout('components.layouts.app')] class extends Component {
     // State untuk pencarian, otomatis sinkron ke URL browser
@@ -17,7 +18,19 @@ new #[Layout('components.layouts.app')] class extends Component {
     // Property untuk pagination
     public int $perPage = 5;
 
-    use WithPagination;
+    use WithPagination, Toast;
+
+    public bool $userModal = false;
+
+    // Form fields
+    public string $name = '';
+    public string $email = '';
+    public string $password = '';
+    public string $nip = '';
+    public string $golongan = '';
+    public string $jabatan = '';
+    public string $bagian = '';
+
 
     // Reset pagination saat search berubah
     public function updatedSearch()
@@ -75,6 +88,41 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         return $this->service()->tableHeaders();
     }
+
+    public function bagianOptions(): array
+    {
+        return collect(\App\Bagian::cases())->map(function ($bagian) {
+            return ['id' => $bagian->value, 'name' => $bagian->label()];
+        })->toArray();
+    }
+
+    public function saveUser()
+    {
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'nip' => 'nullable|string',
+            'golongan' => 'nullable|string',
+            'jabatan' => 'nullable|string',
+            'bagian' => 'nullable|string',
+        ]);
+
+        $this->service()->createUser([
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => $this->password,
+            'nip' => $this->nip,
+            'golongan' => $this->golongan,
+            'jabatan' => $this->jabatan,
+            'bagian' => $this->bagian,
+        ]);
+
+        $this->userModal = false;
+        $this->reset(['name', 'email', 'password', 'nip', 'golongan', 'jabatan', 'bagian']);
+        
+        $this->success('Pegawai berhasil ditambahkan.');
+    }
 };
 ?>
 
@@ -104,9 +152,25 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
             <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
                 icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
-            <x-button icon="o-plus" class="btn-success text-white rounded-full" />
+            <x-button icon="o-plus" class="btn-success text-white rounded-full" wire:click="$set('userModal', true)" />
         </x-custom-table-header>
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()" />
     </x-card>
+
+    <x-modal wire:model="userModal" title="Tambah Pegawai">
+        <x-form wire:submit="saveUser">
+            <x-input label="Nama" wire:model="name" required />
+            <x-input label="Email" wire:model="email" type="email" required />
+            <x-input label="Password" wire:model="password" type="password" required />
+            <x-input label="NIP" wire:model="nip" />
+            <x-input label="Golongan" wire:model="golongan" />
+            <x-input label="Jabatan" wire:model="jabatan" />
+            <x-select label="Bagian" wire:model="bagian" :options="$this->bagianOptions()" placeholder="Pilih Bagian" />
+            <x-slot:actions>
+                <x-button label="Batal" wire:click="$set('userModal', false)" />
+                <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveUser" />
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
 
 </div>

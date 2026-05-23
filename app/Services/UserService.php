@@ -55,4 +55,18 @@ class UserService
             ['key' => 'role', 'label' => 'Role'],
         ];
     }
+
+    public function createUser(array $data): User
+    {
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+            'nip' => $data['nip'],
+            'golongan' => $data['golongan'],
+            'jabatan' => $data['jabatan'],
+            'role' => \App\UserRole::PEGAWAI, // Role locked to pegawai
+            'bagian' => $data['bagian'],
+        ]);
+    }
 }
