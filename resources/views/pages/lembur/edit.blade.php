@@ -92,7 +92,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function generateNomorSurat()
     {
         app(LemburService::class)->generateNomor($this->lembur);
-        $this->lembur->refresh();
+        $this->lembur = $this->lembur->fresh();
         $this->confirmNomorModal = false;
         $this->success('Nomor surat berhasil digenerate.');
     }

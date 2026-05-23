@@ -16,9 +16,9 @@ class NomorSuratService
     public function generate(string $tanggalLembur): array
     {
         $tanggal = Carbon::parse($tanggalLembur)->startOfDay();
-        $tanggalTerbesar = Lembur::max('tanggal_lembur');
+        $tanggalTerbesar = Lembur::whereNotNull('no_utama')->max('tanggal_lembur');
 
-        // Jika tanggal "nyelip" (lebih kecil dari tanggal terbaru di DB)
+        // Jika tanggal "nyelip" (lebih kecil dari tanggal terbaru di DB yang punya nomor)
         if ($tanggalTerbesar && $tanggal < Carbon::parse($tanggalTerbesar)) {
             return $this->generateNomorSisipan($tanggal);
         }
@@ -32,13 +32,16 @@ class NomorSuratService
      */
     private function generateNomorSisipan(Carbon $tanggal): array
     {
-        $induk = Lembur::whereDate('tanggal_lembur', '<=', $tanggal)
+        $induk = Lembur::whereNotNull('no_utama')
+            ->whereDate('tanggal_lembur', '<=', $tanggal)
             ->orderBy('tanggal_lembur', 'desc')
             ->orderBy('no_utama', 'desc')
             ->first();
 
         $noUtama = $induk ? $induk->no_utama : config('app_settings.surat.nomor_awal', 1);
-        $sisipanTerbesar = Lembur::where('no_utama', $noUtama)->max('no_sisipan') ?? 0;
+        $sisipanTerbesar = Lembur::whereNotNull('no_utama')
+            ->where('no_utama', $noUtama)
+            ->max('no_sisipan') ?? 0;
 
         return [
             'no_utama' => $noUtama,
