@@ -166,12 +166,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <x-form wire:submit="saveUser">
             <x-input label="Nama" wire:model="name" required />
             <x-input label="Email" wire:model="email" type="email" required />
-            <div class="relative">
-                <x-input label="Password" wire:model="password" type="{{ $showPassword ? 'text' : 'password' }}" required />
-                <button type="button" wire:click="$toggle('showPassword')" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700">
-                    <x-icon name="{{ $showPassword ? 'o-eye-slash' : 'o-eye' }}" class="w-5 h-5" />
-                </button>
-            </div>
+            <x-password label="Password" wire:model="password" right-icon="o-eye" required />
             <x-input label="NIP" wire:model="nip" />
             <x-input label="Golongan" wire:model="golongan" />
             <x-input label="Jabatan" wire:model="jabatan" />
