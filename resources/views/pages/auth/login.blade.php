@@ -20,7 +20,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
             $this->success('Selamat datang kembali!');
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/lembur');
         }
 
         $this->error('Email atau password salah.', position: 'toast-bottom toast-end');
