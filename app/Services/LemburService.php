@@ -262,8 +262,7 @@ class LemburService
             ['key' => 'nomor', 'label' => 'No. Surat', 'sortable' => false],
             ['key' => 'nama', 'label' => 'Nama'],
             ['key' => 'tanggal_lembur', 'label' => 'Tanggal Lembur'],
-            ['key' => 'hasil_kerja', 'label' => 'Hasil Kerja'],
-            ['key' => 'jumlah_jam', 'label' => 'Jam'],
+            ['key' => 'bagian', 'label' => 'Bagian'],
         ];
     }
 

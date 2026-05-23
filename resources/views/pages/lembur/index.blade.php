@@ -204,6 +204,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                 {{ \Carbon\Carbon::parse($lembur->tanggal_lembur)->translatedFormat('d F Y') }}
             @endscope
 
+            {{-- Custom Kolom Bagian --}}
+            @scope('cell_bagian', $lembur)
+                {{ $lembur->user && $lembur->user->bagian ? $lembur->user->bagian->label() : '-' }}
+            @endscope
+
             {{-- Kolom Aksi --}}
             @scope('actions', $lembur)
                 <div class="flex gap-2">
