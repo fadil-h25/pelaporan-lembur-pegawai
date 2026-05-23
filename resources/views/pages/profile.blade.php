@@ -12,6 +12,8 @@ use Mary\Traits\Toast;
 new #[Layout('components.layouts.app')] class extends Component {
     use Toast;
 
+    public ?User $targetUser = null;
+    public bool $isOwnProfile = true;
     public bool $isEditing = false;
 
     #[Validate('required|string|max:255')]
@@ -34,15 +36,22 @@ new #[Layout('components.layouts.app')] class extends Component {
     public ?string $password = null;
     public ?string $password_confirmation = null;
 
-    public function mount()
+    public function mount(?User $user = null)
     {
-        $user = auth()->user();
-        $this->name = $user->name;
-        $this->email = $user->email;
-        $this->nip = $user->nip;
-        $this->jabatan = $user->jabatan;
-        $this->golongan = $user->golongan;
-        $this->bagian = $user->bagian?->value;
+        if ($user && $user->id !== auth()->id()) {
+            $this->targetUser = $user;
+            $this->isOwnProfile = false;
+        } else {
+            $this->targetUser = auth()->user();
+            $this->isOwnProfile = true;
+        }
+
+        $this->name = $this->targetUser->name;
+        $this->email = $this->targetUser->email;
+        $this->nip = $this->targetUser->nip;
+        $this->jabatan = $this->targetUser->jabatan;
+        $this->golongan = $this->targetUser->golongan;
+        $this->bagian = $this->targetUser->bagian?->value;
     }
 
     public function rules()
@@ -58,7 +67,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->isEditing = !$this->isEditing;
         if (!$this->isEditing) {
             // Reset to original values if cancelled
-            $this->mount();
+            $this->mount($this->targetUser);
             $this->password = null;
             $this->password_confirmation = null;
             $this->resetValidation();
@@ -68,6 +77,10 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function save()
     {
         $this->validate();
+
+        if (!$this->isOwnProfile) {
+            return;
+        }
 
         $user = auth()->user();
         
@@ -104,17 +117,17 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-card shadow>
                 <div class="flex flex-col items-center text-center py-4">
                     <div class="flex justify-center w-full">
-                        <x-avatar :placeholder="collect(explode(' ', auth()->user()->name))
+                        <x-avatar :placeholder="collect(explode(' ', $targetUser->name))
                             ->map(fn($n) => $n[0])
                             ->take(2)
                             ->implode('')" class="!w-32 !h-32 mb-4 text-4xl border-4 border-primary/10" />
                     </div>
 
-                    <h2 class="text-2xl font-bold mt-2 text-base-content">{{ auth()->user()->name }}</h2>
-                    <p class="text-base-content/60">{{ auth()->user()->email }}</p>
+                    <h2 class="text-2xl font-bold mt-2 text-base-content">{{ $targetUser->name }}</h2>
+                    <p class="text-base-content/60">{{ $targetUser->email }}</p>
 
                     <div class="mt-6 w-full border-t border-base-200 pt-4">
-                        <x-badge :value="ucfirst(auth()->user()->role->value)" class="badge-primary badge-outline py-3 px-4" />
+                        <x-badge :value="ucfirst($targetUser->role->value)" class="badge-primary badge-outline py-3 px-4" />
                     </div>
                 </div>
             </x-card>
@@ -131,7 +144,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <x-input label="Jabatan" wire:model="jabatan" :readonly="!$isEditing" />
                         <x-input label="Golongan" wire:model="golongan" :readonly="!$isEditing" />
                         <x-select label="Bagian" wire:model="bagian" :options="collect(App\Bagian::cases())->map(fn($b) => ['id' => $b->value, 'name' => $b->label()])" option-value="id" option-label="name" :disabled="!$isEditing" placeholder="Pilih Bagian..." />
-                        <x-input label="Role Akses" value="{{ ucfirst(auth()->user()->role->value) }}" readonly />
+                        <x-input label="Role Akses" value="{{ ucfirst($targetUser->role->value) }}" readonly />
                     </div>
 
                     @if($isEditing)
@@ -145,12 +158,16 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endif
 
                     <x-slot:actions>
-                        @if($isEditing)
-                            <x-button label="Batal" wire:click="toggleEdit" icon="o-x-mark" class="btn-ghost" />
-                            <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+                        @if($isOwnProfile)
+                            @if($isEditing)
+                                <x-button label="Batal" wire:click="toggleEdit" icon="o-x-mark" class="btn-ghost" />
+                                <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+                            @else
+                                <x-button label="Kembali" link="/dashboard" icon="o-arrow-left" class="btn-ghost" />
+                                <x-button type="button" label="Edit Profil" wire:click="toggleEdit" icon="o-pencil" class="btn-primary" />
+                            @endif
                         @else
-                            <x-button label="Kembali" link="/dashboard" icon="o-arrow-left" class="btn-ghost" />
-                            <x-button type="button" label="Edit Profil" wire:click="toggleEdit" icon="o-pencil" class="btn-primary" />
+                            <x-button label="Kembali" link="/management-user" icon="o-arrow-left" class="btn-primary" />
                         @endif
                     </x-slot:actions>
                 </x-card>

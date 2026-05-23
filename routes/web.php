@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Profile
-    Volt::route('/profile', 'profile')->name('profile');
+    Volt::route('/profile/{user?}', 'profile')->name('profile');
 
     // DEPRECATED: Pengaturan Sistem - sekarang menggunakan config file
     // Route ini tetap ada untuk backward compatibility tapi tidak direkomendasikan
