@@ -39,7 +39,8 @@
                 <x-menu activate-by-route>
 
                     <div class="mt-2">
-                        <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" />
+                        <!-- Jangan dihapus namun di hiliangkan saja dashbaord -->
+                        <!-- <x-menu-item title="Dashboard" icon="o-chart-bar" link="/dashboard" /> -->
                         <x-menu-item title="Dokumen Lembur" icon="o-document-text" link="/lembur" />
 
                         @if (auth()->check())
