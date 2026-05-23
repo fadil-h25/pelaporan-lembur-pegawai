@@ -19,6 +19,9 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public bool $userModal = false;
     public bool $showPassword = false;
+    
+    public bool $detailModal = false;
+    public ?\App\Models\User $selectedUser = null;
 
     // Form fields
     public string $name = '';
@@ -119,6 +122,12 @@ new #[Layout('components.layouts.app')] class extends Component {
         
         $this->success('Pegawai berhasil ditambahkan.');
     }
+
+    public function showUser($id)
+    {
+        $this->selectedUser = \App\Models\User::find($id);
+        $this->detailModal = true;
+    }
 };
 ?>
 
@@ -148,7 +157,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
             <x-button icon="o-plus" class="btn-success text-white rounded-full" wire:click="$set('userModal', true)" />
         </x-custom-table-header>
-        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()">
+        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()" @row-click="$wire.showUser($event.detail.id)" class="cursor-pointer hover:bg-base-200/50">
             @scope('cell_bagian', $user)
                 {{ $user->bagian ? $user->bagian->label() : '-' }}
             @endscope
@@ -169,6 +178,22 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveUser" />
             </x-slot:actions>
         </x-form>
+    </x-modal>
+
+    <x-modal wire:model="detailModal" title="Detail Pegawai">
+        @if($selectedUser)
+            <div class="space-y-4">
+                <x-input label="Nama" :value="$selectedUser->name" readonly />
+                <x-input label="Email" :value="$selectedUser->email" readonly />
+                <x-input label="NIP" :value="$selectedUser->nip" readonly />
+                <x-input label="Golongan" :value="$selectedUser->golongan" readonly />
+                <x-input label="Jabatan" :value="$selectedUser->jabatan" readonly />
+                <x-input label="Bagian" :value="$selectedUser->bagian ? $selectedUser->bagian->label() : '-'" readonly />
+            </div>
+            <x-slot:actions>
+                <x-button label="Tutup" wire:click="$set('detailModal', false)" class="btn-primary" />
+            </x-slot:actions>
+        @endif
     </x-modal>
 
 </div>
