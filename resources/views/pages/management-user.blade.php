@@ -12,9 +12,6 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Url]
     public string $search = '';
 
-    #[Url]
-    public string $role = '';
-
     // Property untuk pagination
     public int $perPage = 5;
 
@@ -39,11 +36,6 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->resetPage();
     }
 
-    public function updatedRole()
-    {
-        $this->resetPage();
-    }
-
     // Reset pagination saat perPage berubah
     public function updatedPerPage()
     {
@@ -57,12 +49,15 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function users()
     {
-        return $this->service()->filter($this->search, $this->role, $this->perPage);
-    }
+        // Secara paksa query hanya mengembalikan pengguna dengan role pegawai
+        $paginator = $this->service()->filter($this->search, \App\UserRole::PEGAWAI->value, $this->perPage);
+        
+        $paginator->getCollection()->transform(function ($user, $key) use ($paginator) {
+            $user->serial_number = ($paginator->currentPage() - 1) * $paginator->perPage() + $key + 1;
+            return $user;
+        });
 
-    public function roles(): array
-    {
-        return $this->service()->getAvailableRoles();
+        return $paginator;
     }
 
     public function totalUsers()
@@ -139,9 +134,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <div class="flex-1 min-w-[200px]">
             <x-custom-stat title="Admin" :value="$this->totalAdmin()" desc="Total akun admin" icon="o-shield-check" />
         </div>
-        <div class="flex-1 min-w-[200px]">
-            <x-custom-stat title="Operator" :value="$this->totalOperator()" desc="Total akun operator" icon="o-cog" />
-        </div>
+
         <div class="flex-1 min-w-[200px]">
             <x-custom-stat title="Pegawai" :value="$this->totalPegawai()" desc="Total akun pegawai" icon="o-users" />
         </div>
@@ -150,12 +143,16 @@ new #[Layout('components.layouts.app')] class extends Component {
     {{-- TABLE SECTION --}}
     <x-card>
         <x-custom-table-header title="Data Daftar Pengguna" subtitle="Total pengguna ditemukan: {{ $this->users()->total() }}">
-            <x-select wire:model.live="role" :options="$this->roles()" option-value="id" option-label="name" class="rounded-full bg-white" />
+
             <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
                 icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
             <x-button icon="o-plus" class="btn-success text-white rounded-full" wire:click="$set('userModal', true)" />
         </x-custom-table-header>
-        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()" />
+        <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()">
+            @scope('cell_bagian', $user)
+                {{ $user->bagian ? $user->bagian->label() : '-' }}
+            @endscope
+        </x-table>
     </x-card>
 
     <x-modal wire:model="userModal" title="Tambah Pegawai">

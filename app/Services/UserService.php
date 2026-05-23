@@ -47,12 +47,12 @@ class UserService
     public function tableHeaders(): array
     {
         return [
-            ['key' => 'id', 'label' => '#'],
+            ['key' => 'serial_number', 'label' => '#'],
             ['key' => 'name', 'label' => 'Nama'],
             ['key' => 'email', 'label' => 'Email'],
             ['key' => 'nip', 'label' => 'NIP'],
             ['key' => 'jabatan', 'label' => 'Jabatan'],
-            ['key' => 'role', 'label' => 'Role'],
+            ['key' => 'bagian', 'label' => 'Bagian'],
         ];
     }
 
