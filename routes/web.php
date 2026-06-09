@@ -12,7 +12,7 @@ Route::middleware('guest')->group(function () {
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     // Dashboard
-    Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
+    // Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
 
     // Management User
     Volt::route('/management-user', 'management-user')->name('management-user');

@@ -163,7 +163,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <x-button label="Batal" wire:click="toggleEdit" icon="o-x-mark" class="btn-ghost" />
                                 <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
                             @else
-                                <x-button label="Kembali" link="/dashboard" icon="o-arrow-left" class="btn-ghost" />
+                                <x-button label="Kembali" link="/lembur" icon="o-arrow-left" class="btn-ghost" />
                                 <x-button type="button" label="Edit Profil" wire:click="toggleEdit" icon="o-pencil" class="btn-primary" />
                             @endif
                         @else
