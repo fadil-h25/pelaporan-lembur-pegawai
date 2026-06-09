@@ -79,7 +79,7 @@ class NomorSuratService
     public function format(Lembur $lembur, string $type = 'spk'): string
     {
         if (is_null($lembur->no_utama)) {
-            return 'Belum ada nomor';
+            return '';
         }
 
         $t = Carbon::parse($lembur->tanggal_lembur);
