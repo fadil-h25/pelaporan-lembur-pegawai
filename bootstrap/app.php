@@ -11,6 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo('/lembur');
+
         // DEPRECATED: Middleware admin-only tidak digunakan lagi
         // System settings sekarang menggunakan config file
         $middleware->alias([
