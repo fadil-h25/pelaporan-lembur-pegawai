@@ -86,7 +86,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         app(LemburService::class)->update($this->lembur, $validated);
 
-        return redirect()->route('lembur.index');
+        return $this->success('Data lembur berhasil diperbarui!', redirectTo: route('lembur.index'));
     }
 
     public function generateNomorSurat()
