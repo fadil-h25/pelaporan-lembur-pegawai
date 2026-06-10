@@ -64,7 +64,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         return $this->service()->totalUsers();
     }
-
+//
     public function totalAdmin()
     {
         return $this->service()->countByRole(\App\UserRole::ADMIN);
