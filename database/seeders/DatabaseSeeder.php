@@ -29,24 +29,6 @@ class DatabaseSeeder extends Seeder
             'jabatan' => '',
             'role' => UserRole::ADMIN->value,
         ]);
-        User::create([
-            'name' => 'Operator Lembur',
-            'email' => 'operator1@gmail.com',
-            'password' => Hash::make('password123'), // Ganti dengan password yang aman
-            'nip' => '',
-            'golongan' => 'IV/a',
-            'jabatan' => '',
-            'role' => UserRole::OPERATOR->value,
-        ]);
-
-        User::create([
-            'name' => 'Pegawai Lembur',
-            'email' => 'pegawai1@gmail.com',
-            'password' => Hash::make('password123'), // Ganti dengan password yang aman
-            'nip' => '',
-            'golongan' => 'IV/a',
-            'jabatan' => '',
-            'role' => UserRole::PEGAWAI->value,
-        ]);
+       
     }
 }

@@ -4,19 +4,19 @@ namespace App;
 
 enum Bagian: string
 {
-    case BAGIAN1 = 'bagian1';
-    case BAGIAN2 = 'bagian2';
-    case BAGIAN3 = 'bagian3';
-    case SDMKUANGAN= 'SDM dan Keuangan';
+    case BAGIAN1 = 'Administrasi';
+    case BAGIAN2 = 'Penanganan Pelanggaran dan Penyelesaian Sengketa Proses (PPPSP) ';
+    case BAGIAN3 = 'Pengawasan Pemilu';
+    case SDMKUANGAN= 'Hukum, Hubungan Masyarakat Data dan Informasi';
   
 
     public function label(): string
     {
         return match($this) {
-            self::BAGIAN1 => 'Bagian 1',
-            self::BAGIAN2 => 'Bagian 2',
-            self::BAGIAN3 => 'Bagian 3',
-            self::SDMKUANGAN => 'SDM dan Keuangan',
+            self::BAGIAN1 => 'Administrasi',
+            self::BAGIAN2 => 'Penanganan Pelanggaran dan Penyelesaian Sengketa Proses (PPPSP)',
+            self::BAGIAN3 => 'Pengawasan Pemilu',
+            self::SDMKUANGAN => 'Hukum, Hubungan Masyarakat Data dan Informasi',
         };
     }
 }
