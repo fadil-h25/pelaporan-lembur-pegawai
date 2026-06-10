@@ -22,7 +22,7 @@ class NomorSuratService
         if ($tanggalTerbesar && $tanggal < Carbon::parse($tanggalTerbesar)) {
             return $this->generateNomorSisipan($tanggal);
         }
-
+        //
         // Jika tanggal baru atau lebih besar (logika normal/isi lubang)
         return $this->generateNomorUtamaBaru();
     }
