@@ -15,7 +15,7 @@ Route::middleware('auth')->group(function () {
     // Route::view('/dashboard', 'pages::dashboard')->name('dashboard');
 
     // Management User
-    Volt::route('/management-user', 'management-user')->name('management-user');
+    Volt::route('/management-user', 'management-user')->name('management-user')->middleware('admin-only');
 
     // Manajemen Dokumen Lembur
     Route::prefix('lembur')->name('lembur.')->group(function () {
