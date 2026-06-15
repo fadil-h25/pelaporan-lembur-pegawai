@@ -30,5 +30,14 @@ class DatabaseSeeder extends Seeder
             'role' => UserRole::ADMIN->value,
         ]);
        
+        User::create([
+             'name' => 'Contoh Pegawai Lembur',
+            'email' => 'pegawai@gmail.com',
+            'password' => Hash::make('password123'), // Ganti dengan password yang aman
+            'nip' => '123',
+            'golongan' => 'IV/a',
+            'jabatan' => '',
+            'role' => UserRole::PEGAWAI->value,
+        ]);
     }
 }

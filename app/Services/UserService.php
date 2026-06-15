@@ -69,4 +69,56 @@ class UserService
             'bagian' => $data['bagian'],
         ]);
     }
+
+    public function importUsers(string $filePath): array
+    {
+        $imported = 0;
+        $skipped = 0;
+
+        (new \Rap2hpoutre\FastExcel\FastExcel)->import($filePath, function ($line) use (&$imported, &$skipped) {
+            $email = $line['Email'] ?? null;
+            $nip = $line['NIP'] ?? null;
+
+            if (empty($email) || empty($nip)) {
+                $skipped++;
+                return null;
+            }
+
+            // Check if user exists
+            $exists = User::where('email', $email)->orWhere('nip', $nip)->exists();
+
+            if ($exists) {
+                $skipped++;
+                return null;
+            }
+
+            $imported++;
+            
+            // Map the Bagian text to enum value if necessary
+            $bagianText = $line['Bagian'] ?? '';
+            $bagianValue = null;
+            foreach (\App\Bagian::cases() as $bagianEnum) {
+                if (strtolower($bagianEnum->label()) === strtolower(trim($bagianText)) || strtolower($bagianEnum->value) === strtolower(trim($bagianText))) {
+                    $bagianValue = $bagianEnum->value;
+                    break;
+                }
+            }
+
+            return User::create([
+                'name' => $line['Nama'] ?? 'User Baru',
+                'email' => $email,
+                'password' => \Illuminate\Support\Facades\Hash::make($nip),
+                'nip' => $nip,
+                'golongan' => $line['Golongan'] ?? null,
+                'jabatan' => $line['Jabatan'] ?? null,
+                'role' => \App\UserRole::PEGAWAI,
+                'bagian' => $bagianValue,
+            ]);
+        });
+
+        return [
+            'imported' => $imported,
+            'skipped' => $skipped
+        ];
+    }
 }

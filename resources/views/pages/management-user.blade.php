@@ -4,6 +4,7 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use App\Services\UserService;
 use Mary\Traits\Toast;
 
@@ -15,10 +16,12 @@ new #[Layout('components.layouts.app')] class extends Component {
     // Property untuk pagination
     public int $perPage = 5;
 
-    use WithPagination, Toast;
+    use WithPagination, Toast, WithFileUploads;
 
     public bool $userModal = false;
+    public bool $importModal = false;
     public bool $showPassword = false;
+    public $importFile;
 
     // Form fields
     public string $name = '';
@@ -119,6 +122,35 @@ new #[Layout('components.layouts.app')] class extends Component {
         
         $this->success('Pegawai berhasil ditambahkan.');
     }
+
+    public function downloadTemplate()
+    {
+        $data = [
+            ['Nama' => '', 'Email' => '', 'NIP' => '', 'Golongan' => '', 'Jabatan' => '', 'Bagian' => '']
+        ];
+        return (new \Rap2hpoutre\FastExcel\FastExcel(collect($data)))->download('template-import-pegawai.xlsx');
+    }
+
+    public function importUsers()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        $filePath = $this->importFile->getRealPath();
+        
+        try {
+            $result = $this->service()->importUsers($filePath);
+            
+            $this->importModal = false;
+            $this->reset('importFile');
+            
+            $this->success("Import selesai. {$result['imported']} ditambahkan, {$result['skipped']} dilewati.");
+            
+        } catch (\Exception $e) {
+            $this->error('Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
 };
 ?>
 
@@ -146,7 +178,8 @@ new #[Layout('components.layouts.app')] class extends Component {
 
             <x-input wire:model.live.debounce.300ms="search" placeholder="Cari pengguna..."
                 icon="o-magnifying-glass" class="rounded-full !bg-white" clearable />
-            <x-button icon="o-plus" class="btn-success text-white rounded-full" wire:click="$set('userModal', true)" />
+            <x-button icon="o-document-arrow-up" class="btn-info text-white rounded-full" wire:click="$set('importModal', true)" tooltip="Import Akun" />
+            <x-button icon="o-plus" class="btn-success text-white rounded-full" wire:click="$set('userModal', true)" tooltip="Tambah Pegawai" />
         </x-custom-table-header>
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->users()" link="/profile/{id}" class="cursor-pointer hover:bg-base-200/50">
             @scope('cell_bagian', $user)
@@ -167,6 +200,21 @@ new #[Layout('components.layouts.app')] class extends Component {
             <x-slot:actions>
                 <x-button label="Batal" wire:click="$set('userModal', false)" />
                 <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveUser" />
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
+
+    <x-modal wire:model="importModal" title="Import Akun Pegawai">
+        <div class="mb-4">
+            <p class="text-sm text-gray-600 mb-2">Gunakan format Excel standar untuk mengimpor akun. Baris dengan Email atau NIP yang sudah ada di sistem akan dilewati secara otomatis.</p>
+            <x-button wire:click="downloadTemplate" icon="o-arrow-down-tray" label="Download Format Excel" class="btn-sm btn-outline btn-primary" />
+        </div>
+
+        <x-form wire:submit="importUsers">
+            <x-file wire:model="importFile" label="File Excel" accept=".xlsx, .xls, .csv" required />
+            <x-slot:actions>
+                <x-button label="Batal" wire:click="$set('importModal', false)" />
+                <x-button label="Proses Import" type="submit" class="btn-primary" spinner="importUsers" />
             </x-slot:actions>
         </x-form>
     </x-modal>
