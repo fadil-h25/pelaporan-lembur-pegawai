@@ -57,9 +57,14 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function rules()
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore(auth()->user()->id)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->targetUser->id ?? auth()->user()->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
+    }
+
+    public function canEditProfile(): bool
+    {
+        return $this->isOwnProfile || auth()->user()->role === \App\UserRole::ADMIN;
     }
 
     public function toggleEdit()
@@ -78,11 +83,11 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $this->validate();
 
-        if (!$this->isOwnProfile) {
+        if (!$this->canEditProfile()) {
             return;
         }
 
-        $user = auth()->user();
+        $user = $this->isOwnProfile ? auth()->user() : $this->targetUser;
         
         $data = [
             'name' => $this->name,
@@ -158,12 +163,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endif
 
                     <x-slot:actions>
-                        @if($isOwnProfile)
+                        @if($this->canEditProfile())
                             @if($isEditing)
                                 <x-button label="Batal" wire:click="toggleEdit" icon="o-x-mark" class="btn-ghost" />
                                 <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
                             @else
-                                <x-button label="Kembali" link="/lembur" icon="o-arrow-left" class="btn-ghost" />
+                                <x-button label="Kembali" link="{{ $isOwnProfile ? '/lembur' : '/management-user' }}" icon="o-arrow-left" class="btn-ghost" />
                                 <x-button type="button" label="Edit Profil" wire:click="toggleEdit" icon="o-pencil" class="btn-primary" />
                             @endif
                         @else

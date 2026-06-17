@@ -18,7 +18,7 @@ return new class extends Migration
         //     $table->id();
         //     $table->string('nama_kasek')->default('AWALUDDIN MUSTAFA, S.E., M.Si');
         //     $table->string('nip_kasek')->default('19740712 200212 1 006');
-        //     $table->string('akhiran_surat')->default('/SPKL/SN/');
+        //     $table->string('akhiran_surat')->default('/SL/SPKL/SN/');
         //     $table->timestamps();
         // });
     }
