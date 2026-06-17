@@ -115,7 +115,7 @@ class LemburController extends Controller
         $tp = new TemplateProcessor(public_path("templates/template_$type.docx"));
         Carbon::setLocale('id');
         $t = Carbon::parse($l->tanggal_lembur);
-        $tp->setValue('no_surat', str_pad($nomor, 4, '0', STR_PAD_LEFT).'/SPKL/SN/'.$t->format('m/Y'));
+        $tp->setValue('no_surat', str_pad($nomor, 4, '0', STR_PAD_LEFT).'/SL/SPKL/SN/'.$t->format('m/Y'));
         $tp->setValue('nama', $l->nama);
         $tp->setValue('nip', $l->nip);
         $tp->setValue('jabatan', $l->jabatan);

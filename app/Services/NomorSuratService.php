@@ -91,7 +91,7 @@ class NomorSuratService
         $sisipan = $lembur->no_sisipan > 0 ? "." . $lembur->no_sisipan : "";
 
         // Akhiran dari file config berdasarkan tipe surat (spk / lpj)
-        $akhiran = config("system.akhiran_surat_{$type}", '/SPKL/SN/');
+        $akhiran = config("system.akhiran_surat_{$type}", '/SL/SPKL/SN/');
 
         return $noPad . $sisipan . $akhiran . $t->format('m/Y');
     }

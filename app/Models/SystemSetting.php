@@ -29,7 +29,7 @@ class SystemSetting extends Model
         return self::first() ?? self::create([
             'nama_kasek' => 'AWALUDDIN MUSTAFA, S.E., M.Si',
             'nip_kasek' => '19740712 200212 1 006',
-            'akhiran_surat' => '/SPKL/SN/',
+            'akhiran_surat' => '/SL/SPKL/SN/',
         ]);
     }
 }
