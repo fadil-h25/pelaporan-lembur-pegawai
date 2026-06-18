@@ -17,7 +17,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public $jumlah_jam;
 
     #[Validate('required|string')]
-    public $pembebanan_anggaran = 'DIPA TA 2025';
+    public $pembebanan_anggaran = '';
 
     #[Validate('required|string')]
     public $rencana_kerja;
@@ -33,6 +33,11 @@ new #[Layout('components.layouts.app')] class extends Component {
         } else {
             $this->selected_nip = '';
         }
+    }
+
+    public function mount(): void
+    {
+        $this->pembebanan_anggaran = 'DIPA TA ' . date('Y');
     }
 
     public function with(): array

@@ -74,11 +74,23 @@ class NomorSuratService
     }
     /**
      * Format nomor surat lengkap untuk Order (SP) dan SPJ.
-     * Contoh: 0001/SP/SPKL/SN/05/2026 atau 0001.1/SPJ/SPKL/SN/05/2026
+     * Contoh: 0001/SL/SPKL/SN/05/2026 atau 0001.1/SL/SPKL/SN/05/2026
      */
     public function format(Lembur $lembur, string $type = 'spk'): string
     {
         if (is_null($lembur->no_utama)) {
+            // If SPK (SPKL) document is downloaded before number assignment,
+            // return a spaced placeholder followed by the akhiran and month/year.
+            if ($type === 'spk') {
+                $t = Carbon::parse($lembur->tanggal_lembur);
+                $akhiran = config("system.akhiran_surat_{$type}", '/SL/SPKL/SN/');
+                // Use non-breaking spaces so the padding is preserved in HTML output
+                $nbsp = "\xC2\xA0"; // UTF-8 NBSP
+                $placeholder = str_repeat($nbsp, 15);
+
+                return $placeholder . $akhiran . $t->format('m/Y');
+            }
+
             return '';
         }
 
