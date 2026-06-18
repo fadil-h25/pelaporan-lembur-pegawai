@@ -26,6 +26,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     public string $hasNomor = '';
 
     public bool $filterModal = false;
+    public bool $spkConfirmModal = false;
+    public ?int $spkLemburId = null;
 
     public int $perPage = 5;
 
@@ -110,6 +112,25 @@ new #[Layout('components.layouts.app')] class extends Component {
         $this->service()->delete($lembur);
     }
 
+    public function openSpkModal($id)
+    {
+        $this->spkLemburId = $id;
+        $this->spkConfirmModal = true;
+    }
+
+    public function confirmSpk()
+    {
+        if (!$this->spkLemburId) {
+            $this->spkConfirmModal = false;
+            return;
+        }
+
+        $lembur = Lembur::findOrFail($this->spkLemburId);
+        $this->spkConfirmModal = false;
+
+        return $this->service()->downloadCetak('spk', $lembur);
+    }
+
     public function cetak($type, $id)
     {
         $lembur = Lembur::findOrFail($id);
@@ -189,6 +210,40 @@ new #[Layout('components.layouts.app')] class extends Component {
             </x-slot:actions>
         </x-modal>
 
+        <x-modal wire:model="spkConfirmModal" title="Peringatan Penting!" separator>
+            <div x-data="{ timer: 3, interval: null }"
+                 x-init="
+                    $watch('$wire.spkConfirmModal', value => {
+                        if (value) {
+                            timer = 3;
+                            if (interval) clearInterval(interval);
+                            interval = setInterval(() => {
+                                if (timer > 0) timer--;
+                                else clearInterval(interval);
+                            }, 1000);
+                        } else {
+                            if (interval) clearInterval(interval);
+                        }
+                    })
+                 ">
+                <div class="py-4 text-base">
+                    <p>Pastikan SPK sudah diverifikasi oleh Keuangan sebelum meminta tanda tangan Kepala Sekretariat.</p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <x-button label="Batal" @click="$wire.spkConfirmModal = false" class="btn-ghost" />
+                    <button type="button"
+                        wire:click="confirmSpk"
+                        class="btn btn-primary"
+                        x-bind:disabled="timer > 0"
+                    >
+                        <span x-show="timer > 0" x-text="`Tunggu (${timer} detik)...`"></span>
+                        <span x-show="timer === 0">Saya mengerti, cetak SPKL</span>
+                    </button>
+                </div>
+            </div>
+        </x-modal>
+
         <x-table :per-page-values="[3, 5, 10]" per-page="perPage" with-pagination :headers="$this->headers()" :rows="$this->lemburs()">
 
             {{-- Custom Kolom Nomor --}}
@@ -213,7 +268,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             @scope('actions', $lembur)
                 <div class="flex gap-2">
                     {{-- Cetak --}}
-                    <x-button label="SPK" wire:click="cetak('spk', {{ $lembur->id }})"
+                    <x-button label="SPK" wire:click="openSpkModal({{ $lembur->id }})"
                         class="btn-sm btn-success text-white" spinner />
                     <x-button label="LPJ" wire:click="cetak('lpj', {{ $lembur->id }})"
                         class="btn-sm btn-info text-white" spinner />
