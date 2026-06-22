@@ -28,25 +28,148 @@ class NomorSuratService
     }
 
     /**
-     * Logika khusus untuk mencari nomor induk dan membuat sisipan (.1, .2, dst)
+     * Membandingkan dua nomor surat hierarki secara leksikografis (seperti version comparison).
+     * Contoh: compareHierarchy("1.1", "1.2") -> -1, compareHierarchy("1.1.1", "1.2") -> -1
+     */
+    private function compareHierarchy(string $a, string $b): int
+    {
+        $partsA = array_map('intval', explode('.', $a));
+        $partsB = array_map('intval', explode('.', $b));
+        $len = max(count($partsA), count($partsB));
+        
+        for ($i = 0; $i < $len; $i++) {
+            $valA = $partsA[$i] ?? 0;
+            $valB = $partsB[$i] ?? 0;
+            if ($valA !== $valB) {
+                return $valA <=> $valB;
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Mendapatkan sibling berikutnya (menaikkan angka terakhir dari representasi hierarki).
+     * Contoh: getNextSibling("1") -> "1.1", getNextSibling("1.1") -> "1.2", getNextSibling("1.1.1") -> "1.1.2"
+     */
+    private function getNextSibling(string $num): string
+    {
+        $parts = explode('.', $num);
+        if (count($parts) === 1) {
+            return $parts[0] . '.1';
+        }
+        $lastIdx = count($parts) - 1;
+        $parts[$lastIdx] = (int)$parts[$lastIdx] + 1;
+        return implode('.', $parts);
+    }
+
+    /**
+     * Memisahkan representasi hierarki string kembali menjadi no_utama dan no_sisipan.
+     * Contoh: splitHierarchy("1.1.1") -> ['no_utama' => 1, 'no_sisipan' => '1.1']
+     */
+    private function splitHierarchy(string $num): array
+    {
+        $parts = explode('.', $num);
+        $noUtama = (int)$parts[0];
+        array_shift($parts);
+        $noSisipan = empty($parts) ? '0' : implode('.', $parts);
+        
+        return [
+            'no_utama' => $noUtama,
+            'no_sisipan' => $noSisipan,
+        ];
+    }
+
+    /**
+     * Logika khusus untuk mencari nomor induk dan membuat sisipan (.1, .1.1, dst)
      */
     private function generateNomorSisipan(Carbon $tanggal): array
     {
-        $induk = Lembur::whereNotNull('no_utama')
-            ->whereDate('tanggal_lembur', '<=', $tanggal)
-            ->orderBy('tanggal_lembur', 'desc')
-            ->orderBy('no_utama', 'desc')
-            ->first();
+        // 1. Ambil semua lembur yang sudah memiliki nomor, urutkan berdasarkan tanggal, no_utama, no_sisipan
+        $existing = Lembur::whereNotNull('no_utama')
+            ->get()
+            ->sort(function ($a, $b) {
+                // Bandingkan tanggal dulu
+                $dateA = Carbon::parse($a->tanggal_lembur);
+                $dateB = Carbon::parse($b->tanggal_lembur);
+                if (!$dateA->eq($dateB)) {
+                    return $dateA <=> $dateB;
+                }
+                
+                // Jika tanggal sama, bandingkan hierarkinya
+                $numA = $a->no_utama . ($a->no_sisipan !== '0' && $a->no_sisipan !== 0 ? '.' . $a->no_sisipan : '');
+                $numB = $b->no_utama . ($b->no_sisipan !== '0' && $b->no_sisipan !== 0 ? '.' . $b->no_sisipan : '');
+                return $this->compareHierarchy($numA, $numB);
+            })
+            ->values();
 
-        $noUtama = $induk ? $induk->no_utama : config('app_settings.surat.nomor_awal', 1);
-        $sisipanTerbesar = Lembur::whereNotNull('no_utama')
-            ->where('no_utama', $noUtama)
-            ->max('no_sisipan') ?? 0;
+        // 2. Temukan record langsung sebelum (left) dan langsung setelah (right) tanggal target
+        $left = null;
+        $right = null;
 
-        return [
-            'no_utama' => $noUtama,
-            'no_sisipan' => $sisipanTerbesar + 1,
-        ];
+        foreach ($existing as $item) {
+            $itemDate = Carbon::parse($item->tanggal_lembur);
+            if ($itemDate <= $tanggal) {
+                $left = $item;
+            } else {
+                if (is_null($right)) {
+                    $right = $item;
+                }
+            }
+        }
+
+        // Jika left tidak ditemukan (sebagai fallback)
+        if (!$left) {
+            $left = $existing->first();
+        }
+
+        $numLeft = $left->no_utama . ($left->no_sisipan !== '0' && $left->no_sisipan !== 0 ? '.' . $left->no_sisipan : '');
+        $numRight = $right ? $right->no_utama . ($right->no_sisipan !== '0' && $right->no_sisipan !== 0 ? '.' . $right->no_sisipan : '') : null;
+
+        // 3. Tentukan kandidat nomor untuk tanggal target
+        $candidate = null;
+
+        if ($numRight) {
+            // Coba sibling dari left terlebih dahulu
+            $sibling = $this->getNextSibling($numLeft);
+            
+            // Jika sibling < right leksikografis
+            if ($this->compareHierarchy($sibling, $numRight) < 0) {
+                // Pastikan tidak ada duplikat di DB (hanya untuk berjaga-jaga)
+                $split = $this->splitHierarchy($sibling);
+                $exists = Lembur::where('no_utama', $split['no_utama'])
+                    ->where('no_sisipan', $split['no_sisipan'])
+                    ->exists();
+                    
+                if (!$exists) {
+                    $candidate = $sibling;
+                }
+            }
+            
+            // Jika sibling tidak valid / tidak < right, maka harus branch-off dari left (menambahkan .1 di belakang left)
+            if (is_null($candidate)) {
+                $suffixVal = 1;
+                do {
+                    $branch = $numLeft . '.' . $suffixVal;
+                    $split = $this->splitHierarchy($branch);
+                    $exists = Lembur::where('no_utama', $split['no_utama'])
+                        ->where('no_sisipan', $split['no_sisipan'])
+                        ->exists();
+                        
+                    if (!$exists) {
+                        $candidate = $branch;
+                        break;
+                    }
+                    $suffixVal++;
+                } while (true);
+            }
+        } else {
+            // Jika tidak ada right
+            $sibling = $this->getNextSibling($numLeft);
+            $candidate = $sibling;
+        }
+
+        return $this->splitHierarchy($candidate);
     }
 
     /**
@@ -56,7 +179,7 @@ class NomorSuratService
     private function generateNomorUtamaBaru(): array
     {
         // Ambil semua no_utama yang sudah ada
-        $existingNumbers = Lembur::where('no_sisipan', 0)
+        $existingNumbers = Lembur::whereIn('no_sisipan', [0, '0'])
             ->pluck('no_utama')
             ->toArray();
 
@@ -69,7 +192,7 @@ class NomorSuratService
 
         return [
             'no_utama' => $nomorTujuan,
-            'no_sisipan' => 0,
+            'no_sisipan' => '0',
         ];
     }
     /**
@@ -100,7 +223,7 @@ class NomorSuratService
         $noPad = str_pad($lembur->no_utama, 4, '0', STR_PAD_LEFT);
 
         // Tambahkan titik jika ada sisipan (contoh: 0001.1)
-        $sisipan = $lembur->no_sisipan > 0 ? "." . $lembur->no_sisipan : "";
+        $sisipan = ($lembur->no_sisipan !== '0' && $lembur->no_sisipan !== 0 && !empty($lembur->no_sisipan)) ? "." . $lembur->no_sisipan : "";
 
         // Akhiran dari file config berdasarkan tipe surat (spk / lpj)
         $akhiran = config("system.akhiran_surat_{$type}", '/SL/SPKL/SN/');
