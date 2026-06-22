@@ -11,6 +11,10 @@
         
         {{-- Chart.js for MaryUI x-chart --}}
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+        {{-- Flatpickr for MaryUI x-datepicker --}}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     </head>
 
     <body class="min-h-screen font-sans antialiased bg-base-100">

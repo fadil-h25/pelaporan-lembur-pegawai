@@ -16,10 +16,16 @@ new #[Layout('components.layouts.app')] class extends Component {
     public bool $isAdmin = false;
     public bool $confirmNomorModal = false;
 
+    public array $datepickerConfig = [
+        'altInput' => true,
+        'altFormat' => 'd/m/Y',
+        'dateFormat' => 'Y-m-d',
+    ];
+
     #[Validate('required|date')]
     public $tanggal_lembur;
 
-    #[Validate('required|numeric|min:1')]
+    #[Validate('required|integer|in:1,2,3')]
     public $jumlah_jam;
 
     #[Validate('required|string')]
@@ -78,10 +84,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         // Jika bukan admin, pastikan data yang readonly tidak diubah oleh request (keamanan)
         if (!$this->isAdmin) {
-            unset($validated['tanggal_lembur']);
-            unset($validated['jumlah_jam']);
             unset($validated['pembebanan_anggaran']);
-            unset($validated['rencana_kerja']);
         }
 
         app(LemburService::class)->update($this->lembur, $validated);
@@ -117,16 +120,17 @@ new #[Layout('components.layouts.app')] class extends Component {
                 @endif
                 <x-input label="Nama" value="{{ $lembur->nama }}" readonly />
                 <x-input label="NIP" value="{{ $lembur->nip }}" readonly />
-                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required :readonly="!$isAdmin"
-                    :disabled="!$isAdmin" />
-                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" required :readonly="!$isAdmin"
-                    :disabled="!$isAdmin" />
+                <x-datepicker label="Tanggal Lembur" wire:model="tanggal_lembur" icon="o-calendar" :config="$datepickerConfig" required />
+                <x-select label="Jumlah Jam" wire:model="jumlah_jam" :options="[
+                    ['id' => 1, 'name' => '1 Jam'],
+                    ['id' => 2, 'name' => '2 Jam'],
+                    ['id' => 3, 'name' => '3 Jam'],
+                ]" placeholder="-- Pilih Jumlah Jam --" required />
                 <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required :readonly="!$isAdmin"
                     :disabled="!$isAdmin" />
             </div>
 
-            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required :readonly="!$isAdmin"
-                :disabled="!$isAdmin" />
+            <x-textarea label="Rencana Kerja" wire:model="rencana_kerja" rows="4" required />
 
             <x-textarea label="Hasil Kerja" wire:model="hasil_kerja" rows="4"
                 placeholder="Tuliskan hasil pekerjaan lembur Anda di sini..." />

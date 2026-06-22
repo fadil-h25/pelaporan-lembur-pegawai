@@ -13,7 +13,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     #[Validate('required|date')]
     public $tanggal_lembur;
 
-    #[Validate('required|numeric|min:1')]
+    #[Validate('required|integer|in:1,2,3')]
     public $jumlah_jam;
 
     #[Validate('required|string')]
@@ -24,6 +24,12 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public $selected_user_id = null;
     public $selected_nip = '';
+
+    public array $datepickerConfig = [
+        'altInput' => true,
+        'altFormat' => 'd/m/Y',
+        'dateFormat' => 'Y-m-d',
+    ];
 
     public function updatedSelectedUserId($value)
     {
@@ -102,8 +108,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <x-input label="Nama" value="{{ Auth::user()->name }}" readonly />
                     <x-input label="NIP" value="{{ Auth::user()->nip }}" readonly />
                 @endif
-                <x-input label="Tanggal Lembur" wire:model="tanggal_lembur" type="date" required />
-                <x-input label="Jumlah Jam" wire:model="jumlah_jam" type="number" placeholder="Contoh: 2" required />
+                <x-datepicker label="Tanggal Lembur" wire:model="tanggal_lembur" icon="o-calendar" :config="$datepickerConfig" required />
+                <x-select label="Jumlah Jam" wire:model="jumlah_jam" :options="[
+                    ['id' => 1, 'name' => '1 Jam'],
+                    ['id' => 2, 'name' => '2 Jam'],
+                    ['id' => 3, 'name' => '3 Jam'],
+                ]" placeholder="-- Pilih Jumlah Jam --" required />
                 <x-input label="Pembebanan Anggaran" wire:model="pembebanan_anggaran" required />
             </div>
 

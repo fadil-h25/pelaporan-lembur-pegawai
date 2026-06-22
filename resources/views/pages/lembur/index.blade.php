@@ -268,7 +268,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             @scope('actions', $lembur)
                 <div class="flex gap-2">
                     {{-- Cetak --}}
-                    <x-button label="SPK" wire:click="openSpkModal({{ $lembur->id }})"
+                    <x-button label="SPKL" wire:click="openSpkModal({{ $lembur->id }})"
                         class="btn-sm btn-success text-white" spinner />
                     <x-button label="LPJ" wire:click="cetak('lpj', {{ $lembur->id }})"
                         class="btn-sm btn-info text-white" spinner />
