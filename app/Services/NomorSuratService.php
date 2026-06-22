@@ -28,20 +28,49 @@ class NomorSuratService
     }
 
     /**
+     * Membandingkan bagian individu nomor (angka vs angka secara integer, huruf vs huruf secara string, huruf < angka).
+     */
+    private function compareParts(string $a, string $b): int
+    {
+        $isNumA = is_numeric($a);
+        $isNumB = is_numeric($b);
+        
+        if ($isNumA && $isNumB) {
+            return (int)$a <=> (int)$b;
+        }
+        if (!$isNumA && !$isNumB) {
+            return strcmp($a, $b);
+        }
+        // Jika salah satu huruf dan lainnya angka, huruf lebih kecil
+        return $isNumA ? 1 : -1;
+    }
+
+    /**
      * Membandingkan dua nomor surat hierarki secara leksikografis (seperti version comparison).
-     * Contoh: compareHierarchy("1.1", "1.2") -> -1, compareHierarchy("1.1.1", "1.2") -> -1
+     * Contoh: compareHierarchy("1.1", "1.2") -> -1, compareHierarchy("1.1.1", "1.2") -> -1, compareHierarchy("1.1.1.A", "1.1.1.1") -> -1
      */
     private function compareHierarchy(string $a, string $b): int
     {
-        $partsA = array_map('intval', explode('.', $a));
-        $partsB = array_map('intval', explode('.', $b));
+        $partsA = explode('.', $a);
+        $partsB = explode('.', $b);
         $len = max(count($partsA), count($partsB));
         
         for ($i = 0; $i < $len; $i++) {
-            $valA = $partsA[$i] ?? 0;
-            $valB = $partsB[$i] ?? 0;
-            if ($valA !== $valB) {
-                return $valA <=> $valB;
+            $partA = $partsA[$i] ?? null;
+            $partB = $partsB[$i] ?? null;
+            
+            if (is_null($partA)) {
+                // $a lebih pendek (adalah prefix dari $b), jadi $a < $b
+                return -1;
+            }
+            if (is_null($partB)) {
+                // $b lebih pendek (adalah prefix dari $a), jadi $a > $b
+                return 1;
+            }
+            
+            $cmp = $this->compareParts($partA, $partB);
+            if ($cmp !== 0) {
+                return $cmp;
             }
         }
         
@@ -50,7 +79,7 @@ class NomorSuratService
 
     /**
      * Mendapatkan sibling berikutnya (menaikkan angka terakhir dari representasi hierarki).
-     * Contoh: getNextSibling("1") -> "1.1", getNextSibling("1.1") -> "1.2", getNextSibling("1.1.1") -> "1.1.2"
+     * Contoh: getNextSibling("1") -> "1.1", getNextSibling("1.1") -> "1.2", getNextSibling("1.1.1.A") -> "1.1.1.B"
      */
     private function getNextSibling(string $num): string
     {
@@ -59,7 +88,12 @@ class NomorSuratService
             return $parts[0] . '.1';
         }
         $lastIdx = count($parts) - 1;
-        $parts[$lastIdx] = (int)$parts[$lastIdx] + 1;
+        $lastPart = $parts[$lastIdx];
+        if (is_numeric($lastPart)) {
+            $parts[$lastIdx] = (string)((int)$lastPart + 1);
+        } else {
+            $parts[$lastIdx] = ++$lastPart;
+        }
         return implode('.', $parts);
     }
 
@@ -146,11 +180,17 @@ class NomorSuratService
                 }
             }
             
-            // Jika sibling tidak valid / tidak < right, maka harus branch-off dari left (menambahkan .1 di belakang left)
+            // Jika sibling tidak valid / tidak < right, coba branch-off numerik (.1, .2, dst)
             if (is_null($candidate)) {
                 $suffixVal = 1;
-                do {
+                while (true) {
                     $branch = $numLeft . '.' . $suffixVal;
+                    
+                    // Jika branch >= right leksikografis, maka pencarian numerik selesai (karena angka selanjutnya pasti lebih besar)
+                    if ($this->compareHierarchy($branch, $numRight) >= 0) {
+                        break;
+                    }
+                    
                     $split = $this->splitHierarchy($branch);
                     $exists = Lembur::where('no_utama', $split['no_utama'])
                         ->where('no_sisipan', $split['no_sisipan'])
@@ -161,7 +201,32 @@ class NomorSuratService
                         break;
                     }
                     $suffixVal++;
-                } while (true);
+                }
+            }
+            
+            // Jika cabang numerik juga tidak memungkinkan, gunakan abjad latin (.A, .B, dst)
+            if (is_null($candidate)) {
+                $letter = 'A';
+                while (true) {
+                    $branch = $numLeft . '.' . $letter;
+                    
+                    // Karena huruf diurutkan lebih kecil daripada angka, branch dengan huruf seharusnya selalu < right
+                    if ($this->compareHierarchy($branch, $numRight) < 0) {
+                        $split = $this->splitHierarchy($branch);
+                        $exists = Lembur::where('no_utama', $split['no_utama'])
+                            ->where('no_sisipan', $split['no_sisipan'])
+                            ->exists();
+                            
+                        if (!$exists) {
+                            $candidate = $branch;
+                            break;
+                        }
+                    } else {
+                        // Jika karena suatu hal tidak < right, hentikan loop
+                        break;
+                    }
+                    $letter = ++$letter;
+                }
             }
         } else {
             // Jika tidak ada right
